@@ -9,4 +9,6 @@ void backendEnterMenuStart(void);
 void backendExitMenuStart(void);
 bool backendIsConnected(void);
 bool backendIsEmergencyDisable(void);
+
+void backendSetWater(bool on_off);
 #endif

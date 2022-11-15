@@ -11,6 +11,7 @@ struct valve_data
 
 struct menu_data
 {
+    uint32_t water_volume_l;
     struct valve_data valve[CFG_VALVE_CNT];
 };
 

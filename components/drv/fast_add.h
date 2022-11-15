@@ -6,7 +6,9 @@
 typedef enum
 {
 	FP_MINUS,
-	FP_PLUS
+	FP_PLUS,
+	FP_PLUS_10,
+	FP_MINUS_10,
 }fast_process_sign;
 
 typedef struct 

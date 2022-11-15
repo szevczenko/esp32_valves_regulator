@@ -48,6 +48,8 @@ typedef struct
     bool errors;
 
     bool water_on;
+    uint32_t water_volume_l;
+    uint32_t water_read_vol;
     struct valve_data valves[CFG_VALVE_CNT];
 
     bool working_state_req;
@@ -111,6 +113,11 @@ static void change_state(state_t state)
 }
 
 static void count_working_data(void)
+{
+
+}
+
+static void _reset_pulse_counter(void)
 {
 
 }
@@ -242,6 +249,27 @@ static void state_working(void)
         ctx.valves[i].valve_on = menuGetValue(ctx.valves[i].menu_value);
     }
 
+    ctx.water_volume_l = menuGetValue(MENU_WATER_VOL_ADD);
+
+    if (!ctx.water_on && menuGetValue(MENU_ADD_WATER))
+    {
+        _reset_pulse_counter();
+        ctx.water_read_vol = 0;
+    }
+
+    ctx.water_on = menuGetValue(MENU_ADD_WATER);
+
+    if (ctx.water_read_vol >= ctx.water_volume_l)
+    {
+        menuSetValue(MENU_ADD_WATER, 0);
+        ctx.water_on = false;
+    }
+
+    menuSetValue(MENU_VALVE_6_STATE, ctx.water_on);
+    menuSetValue(MENU_WATER_VOL_READ, ctx.water_read_vol);
+
+    ctx.water_read_vol++;
+    
     osDelay(100);
 }
 

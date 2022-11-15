@@ -41,6 +41,9 @@ typedef struct
     char *error_msg;
     uint32_t get_data_cnt;
 
+    bool enable_water_req;
+    bool on_off_water;
+
     bool menu_start_is_active;
     bool menu_param_is_active;
     bool emergency_msg_sended;
@@ -215,23 +218,34 @@ static void backent_start(void)
             }
         }
 
-        if (pass_counter == CFG_VALVE_CNT)
+        if (pass_counter == CFG_VALVE_CNT && (cmdClientSetValue(MENU_WATER_VOL_ADD, data->water_volume_l, 1000) == TRUE))
         {
             ctx.send_all_data = false;
             for (int i = 0; i < CFG_VALVE_CNT; i++)
             {
                 ctx.sended_data.valve[i].state = data->valve[i].state;
             }
+            ctx.sended_data.water_volume_l = data->water_volume_l;
         }
     }
 
-    // if (data->motor_value != ctx.sended_data.motor_value)
-    // {
-    //     if (cmdClientSetValue(MENU_MOTOR, data->motor_value, 1000) == TRUE)
-    //     {
-    //         ctx.sended_data.motor_value = data->motor_value;
-    //     }
-    // }
+    if (ctx.enable_water_req)
+    {
+        if (cmdClientSetValue(MENU_ADD_WATER, ctx.on_off_water, 1000) == TRUE)
+        {
+            ctx.enable_water_req = false;
+        }
+    }
+
+    if (ctx.on_off_water && !ctx.enable_water_req)
+    {
+        if (cmdClientGetValue(MENU_ADD_WATER, NULL, 2000) == TRUE)
+        {
+            ctx.on_off_water = menuGetValue(MENU_ADD_WATER);
+        }
+
+        cmdClientGetValue(MENU_WATER_VOL_READ, NULL, 1000);
+    }
 
     osDelay(10);
 }
@@ -303,6 +317,13 @@ void backendEnterMenuStart(void)
 void backendExitMenuStart(void)
 {
     ctx.menu_start_is_active = false;
+}
+
+void backendSetWater(bool on_off)
+{
+    menuSetValue(MENU_WATER_VOL_READ, 0);
+    ctx.enable_water_req = true;
+    ctx.on_off_water = on_off;
 }
 
 void backendToggleEmergencyDisable(void)

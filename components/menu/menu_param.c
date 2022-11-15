@@ -26,6 +26,9 @@ static menuPStruct_t menuParameters[] =
 	[MENU_VALVE_5_STATE] =               {.max_value = 1,      .default_value = 0  },
     [MENU_VALVE_6_STATE] =               {.max_value = 1,      .default_value = 0  },
     [MENU_VALVE_7_STATE] =               {.max_value = 1,      .default_value = 0  },
+    [MENU_ADD_WATER] =                   {.max_value = 1,      .default_value = 0  },
+	[MENU_WATER_VOL_ADD] =               {.max_value = 2500,   .default_value = 100},
+	[MENU_WATER_VOL_READ] =              {.max_value = 10000,  .default_value = 0  },
     [MENU_VOLTAGE_ACCUM] =               {.max_value = 1,      .default_value = 0  },
     [MENU_START_SYSTEM] =                {.max_value = 1,      .default_value = 0  },
     [MENU_BOOTUP_SYSTEM] =               {.max_value = 1,      .default_value = 1  },
@@ -48,6 +51,9 @@ static char *parameters_name[] =
 	[MENU_VALVE_5_STATE] = "MENU_VALVE_5_STATE",
     [MENU_VALVE_6_STATE] = "MENU_VALVE_6_STATE",
     [MENU_VALVE_7_STATE] = "MENU_VALVE_7_STATE",
+    [MENU_ADD_WATER] = "MENU_ADD_WATER",
+	[MENU_WATER_VOL_ADD] = "MENU_WATER_VOL_ADD",
+	[MENU_WATER_VOL_READ] = "MENU_WATER_VOL_READ",
     [MENU_VOLTAGE_ACCUM] = "MENU_VOLTAGE_ACCUM",
     [MENU_START_SYSTEM] = "MENU_START_SYSTEM",
     [MENU_BOOTUP_SYSTEM] = "MENU_BOOTUP_SYSTEM",
@@ -293,4 +299,7 @@ void menuParamInit(void)
     menuSetValue(MENU_VALVE_5_STATE, 0);
     menuSetValue(MENU_VALVE_6_STATE, 0);
     menuSetValue(MENU_VALVE_7_STATE, 0);
+    menuSetValue(MENU_ADD_WATER, 0);
+	menuSetValue(MENU_WATER_VOL_ADD, 0);
+	menuSetValue(MENU_WATER_VOL_READ, 0);
 }

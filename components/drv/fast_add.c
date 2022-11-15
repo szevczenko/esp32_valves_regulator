@@ -1,8 +1,8 @@
 #include "config.h"
 #include "fast_add.h"
 
-#define FAST_ADD_LIST_SIZE             8
-#define CONFIG_FAST_ADD_THD_WA_SIZE    2048
+#define FAST_ADD_LIST_SIZE 8
+#define CONFIG_FAST_ADD_THD_WA_SIZE 2048
 
 static fast_add_t list[FAST_ADD_LIST_SIZE];
 static uint8_t list_cnt;
@@ -65,6 +65,53 @@ void fastProcessDeInit(void)
     list_cnt = 0;
 }
 
+static void _add_process(uint8_t i)
+{
+    switch (list[i].sign)
+    {
+    case FP_PLUS:
+        if ((*list[i].value) < list[i].max)
+        {
+            (*list[i].value)++;
+        }
+        break;
+
+    case FP_MINUS:
+        if ((*list[i].value) > list[i].min)
+        {
+            (*list[i].value)--;
+        }
+        break;
+
+    case FP_PLUS_10:
+        if ((*list[i].value) < list[i].max - 10)
+        {
+            *list[i].value += 10;
+        }
+        else if ((*list[i].value) < list[i].max)
+        {
+            *list[i].value = list[i].max;
+        }
+        break;
+
+    case FP_MINUS_10:
+        if ((*list[i].value) > list[i].min + 10)
+        {
+            *list[i].value -= 10;
+        }
+        else if ((*list[i].value) > list[i].min)
+        {
+            *list[i].value = list[i].min;
+        }
+        break;
+    }
+
+    if (list[i].func != NULL)
+    {
+        list[i].func(*list[i].value);
+    }
+}
+
 static void fast_add(void *arg)
 {
     while (1)
@@ -83,50 +130,14 @@ static void fast_add(void *arg)
                     {
                         list[i].delay = 0;
                         list[i].counter++;
-                        if (list[i].sign == FP_PLUS)
-                        {
-                            if ((*list[i].value) < list[i].max)
-                            {
-                                (*list[i].value)++;
-                            }
-                        }
-                        else
-                        {
-                            if ((*list[i].value) > list[i].min)
-                            {
-                                (*list[i].value)--;
-                            }
-                        }
-
-                        if (list[i].func != NULL)
-                        {
-                            list[i].func(*list[i].value);
-                        }
+                        _add_process(i);
                     }
                 }
                 else
                 {
                     list[i].delay = 0;
                     list[i].counter++;
-                    if (list[i].sign == FP_PLUS)
-                    {
-                        if ((*list[i].value) < list[i].max)
-                        {
-                            (*list[i].value)++;
-                        }
-                    }
-                    else
-                    {
-                        if ((*list[i].value) > list[i].min)
-                        {
-                            (*list[i].value)--;
-                        }
-                    }
-
-                    if (list[i].func != NULL)
-                    {
-                        list[i].func(*list[i].value);
-                    }
+                    _add_process(i);
                 }
 
                 xSemaphoreGive(xSemaphore);

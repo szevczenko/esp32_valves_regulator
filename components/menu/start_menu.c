@@ -51,18 +51,18 @@ typedef enum
 
 typedef enum
 {
-    EDIT_VALVE_1,
-    EDIT_VALVE_2,
-    EDIT_VALVE_3,
-    EDIT_VALVE_4,
-    EDIT_VALVE_5,
-    EDIT_TOP,
-} edit_value_t;
+    SUBSTATE_MAIN,
+    SUBSTATE_WATER_ADD,
+    SUBSTATE_APPLY_WATER,
+    SUBSTATE_WAIT_WATER_ADD,
+    SUBSTATE_TOP,
+} menu_substate_t;
 
 typedef struct
 {
-    volatile state_start_menu_t state;
+    state_start_menu_t state;
     state_start_menu_t last_state;
+    menu_substate_t substate;
     bool error_flag;
     bool exit_wait_flag;
     int error_code;
@@ -73,10 +73,6 @@ typedef struct
     uint32_t timeout_con;
     uint32_t low_silos_ckeck_timeout;
     error_type_t error_dev;
-    
-#if MENU_VIRO_ON_OFF_VERSION
-    edit_value_t edit_value;
-#endif
 
     struct menu_data data;
     TickType_t animation_timeout;
@@ -180,78 +176,6 @@ static void _reset_power_save_timer(void)
     ctx.go_to_power_save_timeout = MS2ST(POWER_SAVE_TIMEOUT_MS) + xTaskGetTickCount();
 }
 
-static void menu_enter_parameters_callback(void *arg)
-{
-    enterMenuParameters();
-}
-
-static void menu_button_up_callback(void *arg)
-{
-    debug_function_name(__func__);
-    menu_token_t *menu = arg;
-
-    if (menu == NULL)
-    {
-        NULL_ERROR_MSG();
-        return;
-    }
-
-    _reset_error();
-    _reset_power_save_timer();
-
-    if (_is_power_save())
-    {
-        _exit_power_save();
-        change_state(STATE_READY);
-    }
-
-    if (!_is_working_state())
-    {
-        return;
-    }
-}
-
-static void menu_button_down_callback(void *arg)
-{
-    debug_function_name(__func__);
-    menu_token_t *menu = arg;
-
-    if (menu == NULL)
-    {
-        NULL_ERROR_MSG();
-        return;
-    }
-
-    _reset_error();
-    _reset_power_save_timer();
-
-    if (_is_power_save())
-    {
-        _exit_power_save();
-        change_state(STATE_READY);
-    }
-
-    if (!_is_working_state())
-    {
-        return;
-    }
-}
-
-static void menu_button_exit_callback(void *arg)
-{
-    debug_function_name(__func__);
-    menu_token_t *menu = arg;
-
-    if (menu == NULL)
-    {
-        NULL_ERROR_MSG();
-        return;
-    }
-    _reset_error();
-    menuExit(menu);
-    ctx.exit_wait_flag = true;
-}
-
 static bool default_button_process(void *arg)
 {
     menu_token_t *menu = arg;
@@ -279,6 +203,112 @@ static bool default_button_process(void *arg)
     return true;
 }
 
+static void fast_add_callback(uint32_t value)
+{
+
+}
+
+static void menu_button_up_callback(void *arg)
+{
+    debug_function_name(__func__);
+    
+    if (!default_button_process(arg))
+    {
+        return;
+    }
+
+    if (ctx.substate == SUBSTATE_WATER_ADD)
+    {
+        if (ctx.data.water_volume_l < menuGetMaxValue(MENU_WATER_VOL_ADD))
+        {
+            ctx.data.water_volume_l += 10; 
+        }
+    }
+}
+
+static void menu_button_up_time_cb(void *arg)
+{
+    debug_function_name(__func__);
+    
+    if (!default_button_process(arg))
+    {
+        return;
+    }
+
+    if (ctx.substate == SUBSTATE_WATER_ADD)
+    {
+        fastProcessStart(&ctx.data.water_volume_l, menuGetMaxValue(MENU_WATER_VOL_ADD), 1, FP_PLUS_10, fast_add_callback);
+    }
+    else
+    {
+        enterMenuParameters();
+    }
+}
+
+static void menu_button_up_down_pull_cb(void *arg)
+{
+    debug_function_name(__func__);
+    
+    if (!default_button_process(arg))
+    {
+        return;
+    }
+
+    fastProcessStop(&ctx.data.water_volume_l);
+}
+
+static void menu_button_down_callback(void *arg)
+{
+    debug_function_name(__func__);
+    
+    if (!default_button_process(arg))
+    {
+        return;
+    }
+
+    if (ctx.substate == SUBSTATE_WATER_ADD)
+    {
+        if (ctx.data.water_volume_l >= 10)
+        {
+            ctx.data.water_volume_l -= 10; 
+        }
+    }
+}
+
+static void menu_button_down_time_cb(void *arg)
+{
+    debug_function_name(__func__);
+    
+    if (!default_button_process(arg))
+    {
+        return;
+    }
+
+    if (ctx.substate == SUBSTATE_WATER_ADD)
+    {
+        fastProcessStart(&ctx.data.water_volume_l, menuGetMaxValue(MENU_WATER_VOL_ADD), 1, FP_MINUS_10, fast_add_callback);
+    }
+    else
+    {
+        enterMenuParameters();
+    }
+}
+
+static void menu_button_exit_callback(void *arg)
+{
+    debug_function_name(__func__);
+    menu_token_t *menu = arg;
+
+    if (menu == NULL)
+    {
+        NULL_ERROR_MSG();
+        return;
+    }
+    _reset_error();
+    menuExit(menu);
+    ctx.exit_wait_flag = true;
+}
+
 static void menu_button_valve_5_cb(void *arg)
 {
     debug_function_name(__func__);
@@ -300,7 +330,31 @@ static void menu_button_add_water_cb(void *arg)
         return;
     }
 
-    ctx.data.valve[5].state = ctx.data.valve[5].state ? false : true;
+    if (ctx.substate == SUBSTATE_WATER_ADD)
+    {
+        ctx.substate = SUBSTATE_APPLY_WATER;
+    }
+    else if (ctx.substate == SUBSTATE_APPLY_WATER)
+    {
+        backendSetWater(true);
+        menuSetValue(MENU_ADD_WATER, 1);
+        ctx.substate = SUBSTATE_WAIT_WATER_ADD;
+    }
+}
+
+static void menu_button_add_timer_cb(void *arg)
+{
+    debug_function_name(__func__);
+
+    if (!default_button_process(arg))
+    {
+        return;
+    }
+
+    if (ctx.substate == SUBSTATE_MAIN)
+    {
+        ctx.substate = SUBSTATE_WATER_ADD;
+    }
 }
 
 static void menu_button_valve_2_push_cb(void *arg)
@@ -443,9 +497,13 @@ static bool menu_button_init_cb(void *arg)
     }
 
     menu->button.down.fall_callback = menu_button_down_callback;
-    menu->button.down.timer_callback = menu_enter_parameters_callback;
-    menu->button.up.timer_callback = menu_enter_parameters_callback;
+    // menu->button.down.timer_callback = menu_enter_parameters_callback;
+    menu->button.down.timer_callback = menu_button_down_time_cb;
+    menu->button.down.rise_callback = menu_button_up_down_pull_cb;
+    // menu->button.up.timer_callback = menu_enter_parameters_callback;
+    menu->button.up.timer_callback = menu_button_up_time_cb;
     menu->button.up.fall_callback = menu_button_up_callback;
+    menu->button.up.rise_callback = menu_button_up_down_pull_cb;
     menu->button.enter.fall_callback = menu_button_exit_callback;
     menu->button.exit.fall_callback = menu_button_valve_5_cb;
 
@@ -464,6 +522,7 @@ static bool menu_button_init_cb(void *arg)
     menu->button.down_plus.timer_callback = menu_button_valve_4_time_cb;
 
     menu->button.motor_on.fall_callback = menu_button_add_water_cb;
+    menu->button.motor_on.timer_callback = menu_button_add_timer_cb;
     menu->button.on_off.fall_callback = menu_button_on_off;
     return true;
 }
@@ -586,25 +645,8 @@ static void menu_start_start(void)
     change_state(STATE_READY);
 }
 
-static void menu_start_ready(void)
+static void _substate_main(void)
 {
-    debug_function_name(__func__);
-    if (!backendIsConnected())
-    {
-        menu_set_error_msg(dictionary_get_string(DICT_LOST_CONNECTION_WITH_SERVER));
-        return;
-    }
-
-/* Enter power save. Not used */
-#if 0
-    if (ctx.go_to_power_save_timeout < xTaskGetTickCount())
-    {
-        _enter_power_save();
-        change_state(STATE_POWER_SAVE);
-        return;
-    }
-#endif
-
     static char buff_on[64];
     static char buff_off[64];
 
@@ -628,13 +670,81 @@ static void menu_start_ready(void)
     oled_printFixed(2, MENU_HEIGHT, buff_on, OLED_FONT_SIZE_11);
     oled_printFixed(2, MENU_HEIGHT * 2, buff_off, OLED_FONT_SIZE_11);
 
-    sprintf(buff_on, "Water: %s", ctx.data.valve[5].state ? "ON" : "OFF");
-    oled_printFixed(2, MENU_HEIGHT * 3, buff_on, OLED_FONT_SIZE_11);
-
     if (ctx.animation_timeout < xTaskGetTickCount())
     {
         ctx.animation_cnt++;
         ctx.animation_timeout = xTaskGetTickCount() + MS2ST(100);
+    }
+}
+
+static void _substate_add_water(void)
+{
+    static char buff_water[64];
+
+    oled_printFixed(2, MENU_HEIGHT, "WATER ADD:", OLED_FONT_SIZE_11);
+    sprintf(buff_water, "%d [l]", ctx.data.water_volume_l);
+    oled_printFixed(60, MENU_HEIGHT * 2, buff_water, OLED_FONT_SIZE_11);
+}
+
+static void _substate_apply_water(void)
+{
+    oled_printFixed(2, MENU_HEIGHT, "Add water?", OLED_FONT_SIZE_11);
+}
+
+static void _substate_wait_water_add(void)
+{
+    static char buff_water[64];
+    uint32_t water_added = menuGetValue(MENU_WATER_VOL_READ);
+    sprintf(buff_water, "Water in tank %d [l]", water_added);
+    oled_printFixed(2, MENU_HEIGHT, buff_water, OLED_FONT_SIZE_11);
+
+    if (water_added > ctx.data.water_volume_l - 10 || !menuGetValue(MENU_ADD_WATER))
+    {
+        ctx.substate = SUBSTATE_MAIN;
+    }
+}
+
+static void menu_start_ready(void)
+{
+    debug_function_name(__func__);
+    if (!backendIsConnected())
+    {
+        menu_set_error_msg(dictionary_get_string(DICT_LOST_CONNECTION_WITH_SERVER));
+        return;
+    }
+
+/* Enter power save. Not used */
+#if 0
+    if (ctx.go_to_power_save_timeout < xTaskGetTickCount())
+    {
+        _enter_power_save();
+        change_state(STATE_POWER_SAVE);
+        return;
+    }
+#endif
+
+    switch(ctx.substate)
+    {
+        case SUBSTATE_MAIN:
+            _substate_main();
+            break;
+
+        case SUBSTATE_WATER_ADD:
+            _substate_add_water();
+            break;
+
+        case SUBSTATE_APPLY_WATER:
+            _substate_apply_water();
+            break;
+
+        case SUBSTATE_WAIT_WATER_ADD:
+            _substate_wait_water_add();
+            break;
+
+        default:
+            ctx.substate = SUBSTATE_MAIN;
+            _substate_main();
+            break;
     }
 
     backendEnterMenuStart();
