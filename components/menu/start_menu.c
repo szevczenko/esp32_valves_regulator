@@ -129,7 +129,7 @@ static void change_state(state_start_menu_t new_state)
     }
     else
     {
-        LOG(PRINT_INFO, "change state %d", new_state);
+        LOG(PRINT_INFO, "change state %ld", new_state);
     }
 }
 
@@ -603,7 +603,7 @@ static void menu_check_connection(void)
 
     for (uint8_t i = 0; i < 3; i++)
     {
-        LOG(PRINT_INFO, "START_MENU: cmdClientGetAllValue try %d", i);
+        LOG(PRINT_INFO, "START_MENU: cmdClientGetAllValue try %ld", i);
         osDelay(250);
         
 
@@ -682,7 +682,7 @@ static void _substate_add_water(void)
     static char buff_water[64];
 
     oled_printFixed(2, MENU_HEIGHT, "WATER ADD:", OLED_FONT_SIZE_11);
-    sprintf(buff_water, "%d [l]", ctx.data.water_volume_l);
+    sprintf(buff_water, "%ld [l]", ctx.data.water_volume_l);
     oled_printFixed(60, MENU_HEIGHT * 2, buff_water, OLED_FONT_SIZE_11);
 }
 
@@ -695,7 +695,7 @@ static void _substate_wait_water_add(void)
 {
     static char buff_water[64];
     uint32_t water_added = menuGetValue(MENU_WATER_VOL_READ);
-    sprintf(buff_water, "Water in tank %d [l]", water_added);
+    sprintf(buff_water, "Water in tank %ld [l]", water_added);
     oled_printFixed(2, MENU_HEIGHT, buff_water, OLED_FONT_SIZE_11);
 
     if (water_added > ctx.data.water_volume_l - 10 || !menuGetValue(MENU_ADD_WATER))
@@ -978,7 +978,7 @@ void menuInitStartMenu(menu_token_t *menu)
 
 void menuStartSetError(error_type_t error)
 {
-    LOG(PRINT_DEBUG, "%s %d", __func__, error);
+    LOG(PRINT_DEBUG, "%s %ld", __func__, error);
     ctx.error_dev = error;
     change_state(STATE_ERROR);
     menuStartReset();

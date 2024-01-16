@@ -2,7 +2,6 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_system.h"
-#include "esp_spi_flash.h"
 #include "config.h"
 
 #include "wifidrv.h"
@@ -46,7 +45,7 @@ static bool check_i2c_communication(void)
     i2c_master_write_byte(cmd, ( s_i2c_addr << 1 ) | I2C_MASTER_WRITE, 0x1);
     i2c_master_write_byte(cmd, 0x00, 0x1);
     i2c_master_stop(cmd);
-    ret = i2c_master_cmd_begin(I2C_NUM_1, cmd, 1000 / portTICK_RATE_MS);
+    ret = i2c_master_cmd_begin(I2C_NUM_1, cmd, MS2ST( 1000 ));
     i2c_cmd_link_delete(cmd);
     printf("I2C TEST %d\n\r", ret);
     return ret == ESP_OK;

@@ -27,9 +27,9 @@ typedef enum
 typedef enum
 {
 	MEAS_CH_IN,
-	MEAS_CH_MOTOR,
+	// MEAS_CH_MOTOR,
 	MEAS_CH_12V,
-	MEAS_CH_TEMP,
+	// MEAS_CH_TEMP,
 	MEAS_CH_LAST
 } enum_meas_ch;
 
@@ -37,7 +37,6 @@ void init_measure(void);
 void measure_start(void);
 void measure_meas_calibration_value(void);
 uint32_t measure_get_filtered_value(enum_meas_ch type);
-float measure_get_current(enum_meas_ch type, float resistor);
 float accum_get_voltage(void);
 float measure_get_temperature(void);
 

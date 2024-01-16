@@ -630,7 +630,7 @@ static bool menu_process(void *arg)
                    menu->line.start = menu->line.end - MAX_LINE + 1;
                }
 
-               LOG(PRINT_INFO, "menu->line.start %d, menu->line.end %d, position %d, menu->last_button %d\n",
+               LOG(PRINT_INFO, "menu->line.start %ld, menu->line.end %ld, position %ld, menu->last_button %ld\n",
                    menu->line.start, menu->line.end, menu->position, menu->last_button);
            }
 
@@ -663,7 +663,7 @@ static bool menu_process(void *arg)
         switch (parameters_list[menu->position].unit_type)
         {
         case UNIT_INT:
-            sprintf(buff, "%d %s", parameters_list[menu->position].value, parameters_list[menu->position].unit_name != NULL ? parameters_list[menu->position].unit_name : "");
+            sprintf(buff, "%ld %s", parameters_list[menu->position].value, parameters_list[menu->position].unit_name != NULL ? parameters_list[menu->position].unit_name : "");
             oled_printFixed(30,MENU_HEIGHT + 15, buff, OLED_FONT_SIZE_16);
             break;
 
