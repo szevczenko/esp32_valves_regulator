@@ -1,10 +1,10 @@
 #include "cmd_client.h"
-#include "config.h"
+#include "app_config.h"
 #include "menu.h"
 #include "menu_backend.h"
 #include "menu_default.h"
 #include "menu_drv.h"
-#include "menu_param.h"
+#include "parameters.h"
 #include "ssd1306.h"
 #include "ssdFigure.h"
 #include "wifidrv.h"
@@ -70,7 +70,7 @@ static void get_current( uint32_t* value )
 
 static void get_voltage( uint32_t* value )
 {
-  *value = menuGetValue( MENU_VOLTAGE_ACCUM );
+  *value = parameters_getValue( PARAM_VOLTAGE_ACCUM );
 }
 
 static void get_signal( uint32_t* value )
@@ -156,7 +156,7 @@ static bool menu_enter_cb( void* arg )
     NULL_ERROR_MSG();
     return false;
   }
-  backendEnterMenuParameters();
+  backendEnterparameterseters();
   return true;
 }
 
@@ -168,7 +168,7 @@ static bool menu_exit_cb( void* arg )
     NULL_ERROR_MSG();
     return false;
   }
-  backendExitMenuParameters();
+  backendExitparameterseters();
   return true;
 }
 
@@ -240,8 +240,8 @@ static bool _connected_process( menu_token_t* menu )
   scrollBar.all_line = PARAM_TOP - 1;
   ssdFigureDrawScrollBar( &scrollBar );
 
-  // MOTOR_LED_SET_GREEN(menuGetValue(MENU_MOTOR_IS_ON));
-  // SERVO_VIBRO_LED_SET_GREEN(menuGetValue(MENU_SERVO_IS_ON));
+  // MOTOR_LED_SET_GREEN(parameters_getValue(MENU_MOTOR_IS_ON));
+  // SERVO_VIBRO_LED_SET_GREEN(parameters_getValue(MENU_SERVO_IS_ON));
 
   return true;
 }

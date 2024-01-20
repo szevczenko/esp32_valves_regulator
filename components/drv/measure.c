@@ -3,13 +3,13 @@
 #include <stdint.h>
 
 #include "cmd_server.h"
-#include "config.h"
+#include "app_config.h"
 #include "esp_adc/adc_cali.h"
 #include "esp_adc/adc_cali_scheme.h"
 #include "esp_adc/adc_oneshot.h"
 #include "freertos/timers.h"
 #include "measure.h"
-#include "menu_param.h"
+#include "parameters.h"
 #include "parse_cmd.h"
 #include "ultrasonar.h"
 
@@ -153,7 +153,7 @@ static void measure_process( void* arg )
 
     if ( ultrasonar_is_connected() )
     {
-      uint32_t silos_height = menuGetValue( MENU_SILOS_HEIGHT ) * 10;
+      uint32_t silos_height = parameters_getValue( PARAM_SILOS_HEIGHT ) * 10;
       uint32_t silos_distance = ultrasonar_get_distance() > SILOS_START_MEASURE ? ultrasonar_get_distance() - SILOS_START_MEASURE : 0;
       if ( silos_distance > silos_height )
       {
@@ -167,18 +167,18 @@ static void measure_process( void* arg )
       }
       uint32_t silos_is_low = silos_percent < 10;
       LOG( PRINT_INFO, "Silos %d %d", silos_percent, silos_is_low );
-      menuSetValue( MENU_LOW_LEVEL_SILOS, silos_is_low );
-      menuSetValue( MENU_SILOS_LEVEL, (uint32_t) silos_percent );
-      menuSetValue( MENU_SILOS_SENSOR_IS_CONECTED, 1 );
+      parameters_setValue( PARAM_LOW_LEVEL_SILOS, silos_is_low );
+      parameters_setValue( PARAM_SILOS_LEVEL, (uint32_t) silos_percent );
+      parameters_setValue( PARAM_SILOS_SENSOR_IS_CONECTED, 1 );
     }
     else
     {
-      menuSetValue( MENU_SILOS_SENSOR_IS_CONECTED, 0 );
-      menuSetValue( MENU_LOW_LEVEL_SILOS, 0 );
-      menuSetValue( MENU_SILOS_LEVEL, 0 );
+      parameters_setValue( PARAM_SILOS_SENSOR_IS_CONECTED, 0 );
+      parameters_setValue( PARAM_LOW_LEVEL_SILOS, 0 );
+      parameters_setValue( PARAM_SILOS_LEVEL, 0 );
     }
 
-    menuSetValue( MENU_VOLTAGE_ACCUM, (uint32_t) ( accum_get_voltage() * 10000.0 ) );
+    parameters_setValue( PARAM_VOLTAGE_ACCUM, (uint32_t) ( accum_get_voltage() * 10000.0 ) );
   }
 }
 

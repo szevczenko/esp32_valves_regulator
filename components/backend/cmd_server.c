@@ -7,13 +7,13 @@
 #include <string.h>
 #include <sys/select.h>
 
-#include "config.h"
+#include "app_config.h"
 #include "configCmd.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
 #include "freertos/semphr.h"
 #include "freertos/task.h"
-#include "menu_param.h"
+#include "parameters.h"
 #include "parse_cmd.h"
 #include "telnet.h"
 
@@ -458,9 +458,9 @@ int cmdServerAnswerData( uint8_t* buff, uint32_t len )
   return TRUE;
 }
 
-int cmdServerSetValueWithoutResp( menuValue_t val, uint32_t value )
+int cmdServerSetValueWithoutResp( parameter_value_t val, uint32_t value )
 {
-  if ( menuSetValue( val, value ) == FALSE )
+  if ( parameters_setValue( val, value ) == FALSE )
   {
     return FALSE;
   }
@@ -477,9 +477,9 @@ int cmdServerSetValueWithoutResp( menuValue_t val, uint32_t value )
   return TRUE;
 }
 
-int cmdServerSetValueWithoutRespI( menuValue_t val, uint32_t value )
+int cmdServerSetValueWithoutRespI( parameter_value_t val, uint32_t value )
 {
-  if ( menuSetValue( val, value ) == FALSE )
+  if ( parameters_setValue( val, value ) == FALSE )
   {
     return FALSE;
   }
@@ -499,9 +499,9 @@ int cmdServerSetValueWithoutRespI( menuValue_t val, uint32_t value )
   return TRUE;
 }
 
-int cmdServerGetValue( menuValue_t val, uint32_t* value, uint32_t timeout )
+int cmdServerGetValue( parameter_value_t val, uint32_t* value, uint32_t timeout )
 {
-  if ( val >= MENU_LAST_VALUE )
+  if ( val >= PARAM_LAST_VALUE )
   {
     return FALSE;
   }
@@ -527,7 +527,7 @@ int cmdServerGetValue( menuValue_t val, uint32_t* value, uint32_t timeout )
 
       memcpy( &return_value, ctx.responce_buff, sizeof( return_value ) );
 
-      if ( menuSetValue( val, *value ) == FALSE )
+      if ( parameters_setValue( val, *value ) == FALSE )
       {
         ctx.responce_buff_len = 0;
         xSemaphoreGive( ctx.mutexSemaphore );
@@ -551,24 +551,6 @@ int cmdServerGetValue( menuValue_t val, uint32_t* value, uint32_t timeout )
   }
 
   return FALSE;
-}
-
-int cmdServerSetAllValue( void )
-{
-  void* data;
-  uint32_t data_size;
-  static uint8_t sendBuff[PAYLOAD_SIZE];
-
-  menuParamGetDataNSize( &data, &data_size );
-
-  sendBuff[0] = 3 + data_size;
-  sendBuff[1] = CMD_DATA;
-  sendBuff[2] = PC_SET_ALL;
-  memcpy( &sendBuff[3], data, data_size );
-
-  cmdServerSendData( sendBuff, 3 + data_size );
-
-  return TRUE;
 }
 
 int cmdServerGetAllValue( uint32_t timeout )
@@ -596,7 +578,7 @@ int cmdServerGetAllValue( uint32_t timeout )
       {
         return_data = (uint32_t) ctx.responce_buff[3 + i * 4];
         //LOG(PRINT_INFO, "VALUE: %d, %d", i, return_data);
-        if ( menuSetValue( i, return_data ) == FALSE )
+        if ( parameters_setValue( i, return_data ) == FALSE )
         {
           LOG( PRINT_INFO, "Error Set Value %d = %d", i, return_data );
         }

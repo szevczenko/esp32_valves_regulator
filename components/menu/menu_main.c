@@ -1,4 +1,4 @@
-#include "config.h"
+#include "app_config.h"
 #include "menu.h"
 #include "menu_drv.h"
 #include "menu_default.h"
@@ -80,7 +80,7 @@ void enterMenuStart(void)
     menuEnter(&start_menu);
 }
 
-void enterMenuParameters(void)
+void enterparameterseters(void)
 {
     menuEnter(&parameters_menu);
 }

@@ -1,6 +1,6 @@
 #ifndef _ERROR_VALVE_H_
 #define _ERROR_VALVE_H_
-#include "config.h"
+#include "app_config.h"
 
 #define ERROR_CRITICAL_VOLTAGE 800
 #define ERROR_M_TIME_EXIT 2000

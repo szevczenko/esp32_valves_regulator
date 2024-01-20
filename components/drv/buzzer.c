@@ -4,9 +4,9 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "driver/gpio.h"
-#include "config.h"
+#include "app_config.h"
 #include "buzzer.h"
-#include "menu_param.h"
+#include "parameters.h"
 
 #define BUZZER_INIT()
 
@@ -15,7 +15,7 @@ static uint32_t buzzer_timer;
 void buzzer_click(void)
 {
     buzzer_timer = xTaskGetTickCount() + MS2ST(100);
-    if (menuGetValue(MENU_BUZZER))
+    if (parameters_getValue(PARAM_BUZZER))
     {
         BUZZER_ON();
     }

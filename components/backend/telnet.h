@@ -5,7 +5,7 @@
 #include "libtelnet.h"
 #include <lwip/def.h>
 #include <lwip/sockets.h>
-#include "config.h"
+#include "app_config.h"
 
 #include "ringBuff.h"
 

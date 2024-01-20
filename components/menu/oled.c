@@ -1,4 +1,4 @@
-#include "config.h"
+#include "app_config.h"
 #include "ssd1306.h"
 #include "ssd1306_1bit.h"
 #include "oled.h"

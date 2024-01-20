@@ -87,7 +87,7 @@
             "ow_esp32.h": "c",
             "app_events.h": "c",
             "stddef.h": "c",
-            "config.h": "c",
+            "app_config.h": "c",
             "assert.h": "c",
             "app_msg_id.h": "c",
             "app_manager.h": "c",
@@ -100,7 +100,6 @@
             "lwjson.h": "c",
             "stdint.h": "c",
             "socket.h": "c",
-            "app_config.h": "c",
             "random": "c",
             "wifidrv.h": "c",
             "json_parser.h": "c",
@@ -149,7 +148,9 @@
             "io.h": "c",
             "unistd.h": "c",
             "ringbuff.h": "c",
-            "mcpwm_periph.h": "c"
+            "mcpwm_periph.h": "c",
+            "mcpwm_prelude.h": "c",
+            "start_menu.h": "c"
         },
         "cSpell.words": [
             "Dmytro",

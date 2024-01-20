@@ -1,6 +1,6 @@
 #ifndef SERVER_CONTROLLER_H_
 #define SERVER_CONTROLLER_H_
-#include "config.h"
+#include "app_config.h"
 #include "parse_cmd.h"
 
 bool srvrControllGetEmergencyDisable(void);

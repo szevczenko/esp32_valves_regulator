@@ -1,4 +1,4 @@
-#include "config.h"
+#include "app_config.h"
 #include "freertos/timers.h"
 #include "menu.h"
 #include "but.h"

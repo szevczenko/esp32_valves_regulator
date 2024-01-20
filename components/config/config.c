@@ -1,4 +1,4 @@
-#include "config.h"
+#include "app_config.h"
 
 #include "configCmd.h"
 #include "freertos/FreeRTOS.h"

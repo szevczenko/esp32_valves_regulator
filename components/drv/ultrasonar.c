@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include "config.h"
+#include "app_config.h"
 #include "driver/gpio.h"
 #include "driver/uart.h"
 #include "freertos/FreeRTOS.h"

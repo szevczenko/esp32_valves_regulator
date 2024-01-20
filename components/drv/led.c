@@ -3,116 +3,84 @@
  *
  *  Author: Demetriusz
  */
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "freertos/queue.h"
-#include "esp_task_wdt.h"
-
-#include "driver/gpio.h"
-#include "config.h"
-#include "stdint.h"
 #include "led.h"
-#include "driver/mcpwm.h"
-#include "soc/mcpwm_periph.h"
-#include "menu_param.h"
+
+#include <stdbool.h>
+#include <stdint.h>
+
+#include "app_config.h"
+#include "driver/gpio.h"
+#include "esp_task_wdt.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/queue.h"
+#include "freertos/task.h"
+#include "parameters.h"
+#include "pwm_drv.h"
 
 #define MODULE_NAME "[LED] "
-#define DEBUG_LVL PRINT_INFO
+#define DEBUG_LVL   PRINT_INFO
 
 #if CONFIG_DEBUG_BUTTON
-#define LOG(_lvl, ...) \
-    debug_printf(DEBUG_LVL, _lvl, MODULE_NAME __VA_ARGS__)
+#define LOG( _lvl, ... ) \
+  debug_printf( DEBUG_LVL, _lvl, MODULE_NAME __VA_ARGS__ )
 #else
-#define LOG(PRINT_INFO, ...)
+#define LOG( PRINT_INFO, ... )
 #endif
 
 #define PWM_UNIT MCPWM_UNIT_0
-#define PWM_DUTY _get_brighness()
+#define PWM_DUTY _get_brightness()
 
-float _get_brighness(void)
+static pwm_drv_t pwm_drv[LED_AMOUNT];
+
+static float _get_brightness( void )
 {
-    uint32_t value = menuGetValue(MENU_BRIGHTNESS);
-    if (value < 1 || value >= 10)
-    {
-        return 100.0;
-    }
-    else
-    {
-        return (float) value * 10.0;
-    }
+  uint32_t value = parameters_getValue( PARAM_BRIGHTNESS );
+  if ( value < 1 || value >= 10 )
+  {
+    return 100.0;
+  }
+  else
+  {
+    return (float) value * 10.0;
+  }
 }
 
-void set_motor_green_led(bool on_off)
+static void _set_led( LEDs_t led, bool on_off )
 {
-    if (on_off)
-    {
-        mcpwm_set_duty(MCPWM_UNIT_0, MCPWM_TIMER_1, MCPWM_GEN_A, PWM_DUTY);
-        mcpwm_set_duty_type(MCPWM_UNIT_0, MCPWM_TIMER_1, MCPWM_OPR_A, MCPWM_DUTY_MODE_0);
-    }
-    else
-    {
-        mcpwm_set_signal_low(MCPWM_UNIT_0, MCPWM_TIMER_1, MCPWM_OPR_A);
-    }
+  if ( on_off )
+  {
+    PWMDrv_SetDuty( &pwm_drv[led], PWM_DUTY );
+  }
+  else
+  {
+    PWMDrv_Stop( &pwm_drv[led], false );
+  }
 }
 
-void set_servo_green_led(bool on_off)
+void set_motor_green_led( bool on_off )
 {
-    if (on_off)
-    {
-        mcpwm_set_duty(MCPWM_UNIT_0, MCPWM_TIMER_1, MCPWM_GEN_B, PWM_DUTY);
-        mcpwm_set_duty_type(MCPWM_UNIT_0, MCPWM_TIMER_1, MCPWM_GEN_B, MCPWM_DUTY_MODE_0);
-    }
-    else
-    {
-        mcpwm_set_signal_low(MCPWM_UNIT_0, MCPWM_TIMER_1, MCPWM_OPR_B);
-    }
+  _set_led( LED_UPPER_GREEN, on_off );
 }
 
-void set_motor_red_led(bool on_off)
+void set_servo_green_led( bool on_off )
 {
-    if (on_off)
-    {
-        mcpwm_set_duty(MCPWM_UNIT_0, MCPWM_TIMER_0, MCPWM_GEN_A, PWM_DUTY);
-        mcpwm_set_duty_type(MCPWM_UNIT_0, MCPWM_TIMER_0, MCPWM_GEN_A, MCPWM_DUTY_MODE_0);
-    }
-    else
-    {
-        mcpwm_set_signal_low(MCPWM_UNIT_0, MCPWM_TIMER_0, MCPWM_OPR_A);
-    }
+  _set_led( LED_BOTTOM_GREEN, on_off );
 }
 
-void set_servo_red_led(bool on_off)
+void set_motor_red_led( bool on_off )
 {
-    if (on_off)
-    {
-        mcpwm_set_duty(MCPWM_UNIT_0, MCPWM_TIMER_0, MCPWM_GEN_B, PWM_DUTY);
-        mcpwm_set_duty_type(MCPWM_UNIT_0, MCPWM_TIMER_0, MCPWM_GEN_B, MCPWM_DUTY_MODE_0);
-    }
-    else
-    {
-        mcpwm_set_signal_low(MCPWM_UNIT_0, MCPWM_TIMER_0, MCPWM_OPR_B);
-    }
+  _set_led( LED_UPPER_RED, on_off );
 }
 
-void init_leds(void)
+void set_servo_red_led( bool on_off )
 {
-    mcpwm_gpio_init(MCPWM_UNIT_0, MCPWM0A, MOTOR_LED_RED);
-    mcpwm_gpio_init(MCPWM_UNIT_0, MCPWM0B, SERVO_VIBRO_LED_RED);
-    mcpwm_gpio_init(MCPWM_UNIT_0, MCPWM1A, MOTOR_LED_GREEN);
-    mcpwm_gpio_init(MCPWM_UNIT_0, MCPWM1B, SERVO_VIBRO_LED_GREEN);
-    mcpwm_config_t pwm_config = {0};
+  _set_led( LED_BOTTOM_RED, on_off );
+}
 
-    pwm_config.frequency = 50; // frequency = 1000Hz
-    pwm_config.cmpr_a = 0;     // duty cycle of PWMxA = 60.0%
-    pwm_config.cmpr_b = 0;     // duty cycle of PWMxb = 50.0%
-    pwm_config.counter_mode = MCPWM_UP_COUNTER;
-    pwm_config.duty_mode = MCPWM_DUTY_MODE_0;
-
-    mcpwm_init(MCPWM_UNIT_0, MCPWM_TIMER_0, &pwm_config); // Configure PWM0A & PWM0B with above settings
-    mcpwm_init(MCPWM_UNIT_0, MCPWM_TIMER_1, &pwm_config); // Configure PWM0A & PWM0B with above settings
-
-    mcpwm_set_signal_low(MCPWM_UNIT_0, MCPWM_TIMER_0, MCPWM_OPR_A);
-    mcpwm_set_signal_low(MCPWM_UNIT_0, MCPWM_TIMER_1, MCPWM_OPR_A);
-    mcpwm_set_signal_low(MCPWM_UNIT_0, MCPWM_TIMER_0, MCPWM_OPR_B);
-    mcpwm_set_signal_low(MCPWM_UNIT_0, MCPWM_TIMER_1, MCPWM_OPR_B);
+void init_leds( void )
+{
+  PWMDrv_Init( &pwm_drv[LED_UPPER_RED], "up_red", PWM_DRV_DUTY_MODE_HIGH, 10000, 0, MOTOR_LED_RED );
+  PWMDrv_Init( &pwm_drv[LED_BOTTOM_RED], "down_red", PWM_DRV_DUTY_MODE_HIGH, 10000, 0, SERVO_VIBRO_LED_RED );
+  PWMDrv_Init( &pwm_drv[LED_UPPER_GREEN], "up_green", PWM_DRV_DUTY_MODE_HIGH, 10000, 0, MOTOR_LED_GREEN );
+  PWMDrv_Init( &pwm_drv[LED_BOTTOM_GREEN], "down_green", PWM_DRV_DUTY_MODE_HIGH, 10000, 1, SERVO_VIBRO_LED_GREEN );
 }

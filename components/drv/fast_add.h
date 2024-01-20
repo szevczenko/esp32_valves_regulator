@@ -1,7 +1,7 @@
 #ifndef _FAST_ADD_H
 #define _FAST_ADD_H
 
-#include "config.h"
+#include "app_config.h"
 
 typedef enum
 {

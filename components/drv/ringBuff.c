@@ -1,4 +1,4 @@
-#include "config.h"
+#include "app_config.h"
 #include "ringBuff.h"
  
 #if CONFIG_USE_RING_BUFFER

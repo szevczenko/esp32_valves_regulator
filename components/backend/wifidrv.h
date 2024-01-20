@@ -1,7 +1,7 @@
 #ifndef _WIFI_DRV_H
 #define _WIFI_DRV_H
 
-#include "config.h"
+#include "app_config.h"
 
 #define WIFI_SOLARKA_NAME "SOLA"
 #define WIFI_SIEWNIK_NAME "SIEW"

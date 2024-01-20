@@ -2,7 +2,7 @@
 
 #include "cmd_client.h"
 #include "cmd_server.h"
-#include "config.h"
+#include "app_config.h"
 #include "driver/gpio.h"
 #include "esp_event.h"
 #include "esp_log.h"

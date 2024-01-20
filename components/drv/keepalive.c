@@ -1,4 +1,4 @@
-#include "config.h"
+#include "app_config.h"
 #include "freertos/FreeRTOS.h"
 #include "keepalive.h"
 #include "parse_cmd.h"

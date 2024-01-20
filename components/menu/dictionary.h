@@ -7,12 +7,12 @@
 
 typedef enum
 {
-    MENU_LANGUAGE_ENGLISH,
-    MENU_LANGUAGE_RUSSIAN,
-    MENU_LANGUAGE_POLISH,
-    MENU_LANGUAGE_GERMANY,
-    MENU_LANGUAGE_TOP
-} menu_language_t;
+    DICT_LANGUAGE_ENGLISH,
+    DICT_LANGUAGE_RUSSIAN,
+    DICT_LANGUAGE_POLISH,
+    DICT_LANGUAGE_GERMANY,
+    DICT_LANGUAGE_TOP
+} dict_language_t;
 
 enum dictionary_phrase
 {
@@ -98,7 +98,7 @@ enum dictionary_phrase
 };
 
 void dictionary_init(void);
-bool dictionary_set_language(menu_language_t lang);
+bool dictionary_set_language(dict_language_t lang);
 const char *dictionary_get_string(enum dictionary_phrase phrase);
 
 #endif

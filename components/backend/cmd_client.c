@@ -7,7 +7,7 @@
 #include <string.h>
 #include <sys/select.h>
 
-#include "config.h"
+#include "app_config.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
 #include "freertos/task.h"

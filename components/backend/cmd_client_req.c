@@ -6,7 +6,7 @@
 #include <sys/select.h>
 
 #include "cmd_client.h"
-#include "config.h"
+#include "app_config.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
 #include "freertos/task.h"
@@ -149,10 +149,10 @@ static void _requests_process( void* arg )
   }
 }
 
-int cmdClientSetValueWithoutResp( menuValue_t val, uint32_t value )
+int cmdClientSetValueWithoutResp( parameter_value_t val, uint32_t value )
 {
   LOG( PRINT_DEBUG, "%s: %d %d", __func__, val, value );
-  if ( menuSetValue( val, value ) == FALSE )
+  if ( parameters_setValue( val, value ) == FALSE )
   {
     LOG( PRINT_ERROR, "%s: cannot set value", __func__ );
     return FALSE;
@@ -213,10 +213,10 @@ int cmdClientSetValueWithoutResp( menuValue_t val, uint32_t value )
   return TRUE;
 }
 
-int cmdClientGetValue( menuValue_t val, uint32_t* value, uint32_t timeout )
+int cmdClientGetValue( parameter_value_t val, uint32_t* value, uint32_t timeout )
 {
   LOG( PRINT_DEBUG, "%s %d", __func__, val );
-  if ( val >= MENU_LAST_VALUE )
+  if ( val >= PARAM_LAST_VALUE )
   {
     LOG( PRINT_ERROR, "%s: Invalid argument", __func__ );
     return FALSE;
@@ -308,7 +308,7 @@ int cmdClientGetValue( menuValue_t val, uint32_t* value, uint32_t timeout )
 
   memcpy( &return_value, &rxBuff[FRAME_VALUE_POS], sizeof( return_value ) );
 
-  if ( menuSetValue( val, return_value ) == FALSE )
+  if ( parameters_setValue( val, return_value ) == FALSE )
   {
     LOG( PRINT_INFO, "%s error set val %d = %d", __func__, val, return_value );
     return FALSE;
@@ -328,16 +328,16 @@ int cmdClientSendCmd( parseCmd_t cmd )
   return ERROR;
 }
 
-int cmdClientSetValue( menuValue_t val, uint32_t value, uint32_t timeout )
+int cmdClientSetValue( parameter_value_t val, uint32_t value, uint32_t timeout )
 {
   LOG( PRINT_DEBUG, "%s %d", __func__, val );
-  if ( val >= MENU_LAST_VALUE )
+  if ( val >= PARAM_LAST_VALUE )
   {
     LOG( PRINT_ERROR, "%s: Invalid argument", __func__ );
     return FALSE;
   }
 
-  if ( menuSetValue( val, value ) == FALSE )
+  if ( parameters_setValue( val, value ) == FALSE )
   {
     LOG( PRINT_ERROR, "%s: canot set value %d = %d", __func__, val, value );
     return FALSE;
@@ -443,117 +443,6 @@ int cmdClientSetValue( menuValue_t val, uint32_t value, uint32_t timeout )
   }
 
   return FALSE;
-}
-
-int cmdClientSetAllValue( void )
-{
-  LOG( PRINT_ERROR, "%s Not ready", __func__ );
-  return ERROR;
-}
-
-int cmdClientGetAllValue( uint32_t timeout )
-{
-  LOG( PRINT_DEBUG, "%s", __func__ );
-
-  // struct cmd_client_request_data *msg = malloc(sizeof(struct cmd_client_request_data));
-
-  // memset(msg, 0, sizeof(struct cmd_client_request_data));
-
-  // msg->sem = xSemaphoreCreateBinary();
-
-  // if (msg->sem == NULL)
-  // {
-  //     LOG(PRINT_ERROR, "%s: cannot create semaphore", __func__);
-  //     return ERROR;
-  // }
-
-  // void *data = NULL;
-  // uint32_t data_size = 0;
-
-  // menuParamGetDataNSize(&data, &data_size);
-  // uint32_t return_value = 0;
-  // uint32_t request_number = ctx.request_number++;
-  // uint32_t rx_req_number = 0;
-  // uint8_t rxBuff[FRAME_VALUE_POS + MENU_LAST_VALUE * sizeof(uint32_t)] = {0};
-  // uint8_t sendBuff[7] = {0};
-  // int result = 0;
-
-  // sendBuff[FRAME_LEN_POS] = sizeof(sendBuff);
-  // memcpy(&sendBuff[FRAME_REQ_NUMBER_POS], &request_number, sizeof(request_number));
-  // sendBuff[FRAME_CMD_POS] = CMD_REQEST;
-  // sendBuff[FRAME_PARSE_TYPE_POS] = PC_GET_ALL;
-
-  // msg->rx_data = (void *)rxBuff;
-  // msg->rx_data_size = sizeof(rxBuff);
-  // msg->send_data = (void *)sendBuff;
-  // msg->send_data_size = sizeof(sendBuff);
-  // msg->request_number = request_number;
-  // msg->timeout_ms = timeout;
-
-  // LOG(PRINT_DEBUG, "%s msg %x", __func__, (uint32_t)msg);
-
-  // if (xQueueSend(ctx.msg_queue, &msg, 0) != pdTRUE)
-  // {
-  //     vSemaphoreDelete(msg->sem);
-  //     free(msg);
-  //     LOG(PRINT_ERROR, "%s: cannot add msg to queue", __func__);
-  //     return ERROR;
-  // }
-
-  // if (xSemaphoreTake(msg->sem, portMAX_DELAY) != pdTRUE)
-  // {
-  //     vSemaphoreDelete(msg->sem);
-  //     free(msg);
-  //     LOG(PRINT_ERROR, "%s: cannot take semaphore", __func__);
-  //     return ERROR;
-  // }
-
-  // vSemaphoreDelete(msg->sem);
-  // result = msg->result;
-  // free(msg);
-
-  // if (result < 0)
-  // {
-  //     LOG(PRINT_ERROR, "%s: Bad result", __func__);
-  //     return result;
-  // }
-
-  // memcpy(&rx_req_number, &rxBuff[FRAME_REQ_NUMBER_POS], sizeof(rx_req_number));
-
-  // if (rx_req_number != request_number)
-  // {
-  //     LOG(PRINT_ERROR, "%s Bad req number %d %d", __func__, request_number, rx_req_number);
-  //     return ERROR;
-  // }
-
-  // if (CMD_ANSWER != rxBuff[FRAME_CMD_POS])
-  // {
-  //     LOG(PRINT_ERROR, "%s bad cmd %x", __func__, rxBuff[FRAME_CMD_POS]);
-  //     return ERROR;
-  // }
-
-  // if (PC_GET != rxBuff[FRAME_PARSE_TYPE_POS])
-  // {
-  //     LOG(PRINT_ERROR, "%s bad type %d", __func__, rxBuff[FRAME_PARSE_TYPE_POS]);
-  //     return ERROR;
-  // }
-
-  // for (int i = 0; i < (rxBuff[FRAME_LEN_POS] - FRAME_VALUE_POS) / 4; i++)
-  // {
-  //     return_value = (uint32_t)rxBuff[FRAME_VALUE_POS + i * 4];
-  //     LOG(PRINT_DEBUG, "VALUE: %d, %d", i, return_value);
-  //     if ((i == MENU_BOOTUP_SYSTEM) || (i == MENU_BUZZER) || (i == MENU_EMERGENCY_DISABLE))
-  //     {
-  //         continue;
-  //     }
-
-  //     if (menuSetValue(i, return_value) == FALSE)
-  //     {
-  //         LOG(PRINT_ERROR, "%s Error Set Value %d = %d", __func__, i, return_value);
-  //     }
-  // }
-
-  return TRUE;
 }
 
 void cmdClientReqStartTask( void )

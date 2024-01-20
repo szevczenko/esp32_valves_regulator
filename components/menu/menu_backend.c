@@ -2,11 +2,11 @@
 
 #include "but.h"
 #include "cmd_client.h"
-#include "config.h"
+#include "app_config.h"
 #include "freertos/semphr.h"
 #include "menu.h"
 #include "menu_drv.h"
-#include "menu_param.h"
+#include "parameters.h"
 #include "start_menu.h"
 #include "stdarg.h"
 #include "stdint.h"
@@ -44,7 +44,7 @@ typedef struct
   bool enable_water_req;
   bool on_off_water;
 
-  bool menu_start_is_active;
+  bool start_menu_is_active;
   bool menu_param_is_active;
   bool emergency_msg_sended;
   bool emergency_exit_msg_sended;
@@ -52,9 +52,9 @@ typedef struct
 
   bool send_all_data;
   struct menu_data sended_data;
-} menu_start_context_t;
+} start_menu_context_t;
 
-static menu_start_context_t ctx;
+static start_menu_context_t ctx;
 
 static char* state_name[] =
   {
@@ -99,14 +99,14 @@ static void _send_emergency_msg( void )
   }
 
   bool ret =
-    ( cmdClientSetValue( MENU_EMERGENCY_DISABLE, 1, 2000 ) > 0 )
-    && ( cmdClientSetValue( MENU_VALVE_1_STATE, 0, 2000 ) > 0 )
-    && ( cmdClientSetValue( MENU_VALVE_2_STATE, 0, 2000 ) > 0 )
-    && ( cmdClientSetValue( MENU_VALVE_3_STATE, 0, 2000 ) > 0 )
-    && ( cmdClientSetValue( MENU_VALVE_4_STATE, 0, 2000 ) > 0 )
-    && ( cmdClientSetValue( MENU_VALVE_5_STATE, 0, 2000 ) > 0 )
-    && ( cmdClientSetValue( MENU_VALVE_6_STATE, 0, 2000 ) > 0 )
-    && ( cmdClientSetValue( MENU_VALVE_7_STATE, 0, 2000 ) > 0 );
+    ( cmdClientSetValue( PARAM_EMERGENCY_DISABLE, 1, 2000 ) > 0 )
+    && ( cmdClientSetValue( PARAM_VALVE_1_STATE, 0, 2000 ) > 0 )
+    && ( cmdClientSetValue( PARAM_VALVE_2_STATE, 0, 2000 ) > 0 )
+    && ( cmdClientSetValue( PARAM_VALVE_3_STATE, 0, 2000 ) > 0 )
+    && ( cmdClientSetValue( PARAM_VALVE_4_STATE, 0, 2000 ) > 0 )
+    && ( cmdClientSetValue( PARAM_VALVE_5_STATE, 0, 2000 ) > 0 )
+    && ( cmdClientSetValue( PARAM_VALVE_6_STATE, 0, 2000 ) > 0 )
+    && ( cmdClientSetValue( PARAM_VALVE_7_STATE, 0, 2000 ) > 0 );
 
   LOG( PRINT_INFO, "%s %d", __func__, ret );
   if ( ret )
@@ -137,7 +137,7 @@ static void backend_idle( void )
     return;
   }
 
-  if ( ctx.menu_start_is_active )
+  if ( ctx.start_menu_is_active )
   {
     ctx.send_all_data = true;
     change_state( STATE_START );
@@ -149,8 +149,8 @@ static void backend_idle( void )
 
 static bool _check_error( void )
 {
-  cmdClientGetValue( MENU_MACHINE_ERRORS, NULL, 2000 );
-  uint32_t errors = menuGetValue( MENU_MACHINE_ERRORS );
+  cmdClientGetValue( PARAM_MACHINE_ERRORS, NULL, 2000 );
+  uint32_t errors = parameters_getValue( PARAM_MACHINE_ERRORS );
 
   if ( errors > 0 )
   {
@@ -182,10 +182,10 @@ static void backend_start( void )
       menuStartResetError();
       LOG( PRINT_DEBUG, "No error" );
     }
-    cmdClientGetValue( MENU_VOLTAGE_ACCUM, NULL, 2000 );
-    cmdClientGetValue( MENU_LOW_LEVEL_SILOS, NULL, 2000 );
-    cmdClientGetValue( MENU_SILOS_LEVEL, NULL, 2000 );
-    cmdClientGetValue( MENU_SILOS_SENSOR_IS_CONECTED, NULL, 2000 );
+    cmdClientGetValue( PARAM_VOLTAGE_ACCUM, NULL, 2000 );
+    cmdClientGetValue( PARAM_LOW_LEVEL_SILOS, NULL, 2000 );
+    cmdClientGetValue( PARAM_SILOS_LEVEL, NULL, 2000 );
+    cmdClientGetValue( PARAM_SILOS_SENSOR_IS_CONECTED, NULL, 2000 );
   }
 
   ctx.get_data_cnt++;
@@ -196,7 +196,7 @@ static void backend_start( void )
     return;
   }
 
-  if ( !ctx.menu_start_is_active )
+  if ( !ctx.start_menu_is_active )
   {
     change_state( STATE_IDLE );
     return;
@@ -215,13 +215,13 @@ static void backend_start( void )
 
     for ( int i = 0; i < CFG_VALVE_CNT; i++ )
     {
-      if ( cmdClientSetValue( MENU_VALVE_1_STATE + i, data->valve[i].state, 1000 ) == TRUE )
+      if ( cmdClientSetValue( PARAM_VALVE_1_STATE + i, data->valve[i].state, 1000 ) == TRUE )
       {
         pass_counter++;
       }
     }
 
-    if ( pass_counter == CFG_VALVE_CNT && ( cmdClientSetValue( MENU_WATER_VOL_ADD, data->water_volume_l, 1000 ) == TRUE ) )
+    if ( pass_counter == CFG_VALVE_CNT && ( cmdClientSetValue( PARAM_WATER_VOL_ADD, data->water_volume_l, 1000 ) == TRUE ) )
     {
       ctx.send_all_data = false;
       for ( int i = 0; i < CFG_VALVE_CNT; i++ )
@@ -234,7 +234,7 @@ static void backend_start( void )
 
   if ( ctx.enable_water_req )
   {
-    if ( cmdClientSetValue( MENU_ADD_WATER, ctx.on_off_water, 1000 ) == TRUE )
+    if ( cmdClientSetValue( PARAM_ADD_WATER, ctx.on_off_water, 1000 ) == TRUE )
     {
       ctx.enable_water_req = false;
     }
@@ -242,12 +242,12 @@ static void backend_start( void )
 
   if ( ctx.on_off_water && !ctx.enable_water_req )
   {
-    if ( cmdClientGetValue( MENU_ADD_WATER, NULL, 2000 ) == TRUE )
+    if ( cmdClientGetValue( PARAM_ADD_WATER, NULL, 2000 ) == TRUE )
     {
-      ctx.on_off_water = menuGetValue( MENU_ADD_WATER );
+      ctx.on_off_water = parameters_getValue( PARAM_ADD_WATER );
     }
 
-    cmdClientGetValue( MENU_WATER_VOL_READ, NULL, 1000 );
+    cmdClientGetValue( PARAM_WATER_VOL_READ, NULL, 1000 );
   }
 
   osDelay( 10 );
@@ -261,7 +261,7 @@ static void backend_menu_parameters( void )
     return;
   }
 
-  cmdClientGetValue( MENU_VOLTAGE_ACCUM, NULL, 2000 );
+  cmdClientGetValue( PARAM_VOLTAGE_ACCUM, NULL, 2000 );
   osDelay( 50 );
 }
 
@@ -287,7 +287,7 @@ static void backend_emergency_disable_exit( void )
 {
   if ( !ctx.emergency_exit_msg_sended )
   {
-    int ret = cmdClientSetValue( MENU_EMERGENCY_DISABLE, 0, 2000 );
+    int ret = cmdClientSetValue( PARAM_EMERGENCY_DISABLE, 0, 2000 );
     LOG( PRINT_INFO, "%s %d", __func__, ret );
     if ( ret > 0 )
     {
@@ -302,29 +302,29 @@ static void backend_emergency_disable_exit( void )
   }
 }
 
-void backendEnterMenuParameters( void )
+void backendEnterparameterseters( void )
 {
   ctx.menu_param_is_active = true;
 }
 
-void backendExitMenuParameters( void )
+void backendExitparameterseters( void )
 {
   ctx.menu_param_is_active = false;
 }
 
 void backendEnterMenuStart( void )
 {
-  ctx.menu_start_is_active = true;
+  ctx.start_menu_is_active = true;
 }
 
 void backendExitMenuStart( void )
 {
-  ctx.menu_start_is_active = false;
+  ctx.start_menu_is_active = false;
 }
 
 void backendSetWater( bool on_off )
 {
-  menuSetValue( MENU_WATER_VOL_READ, 0 );
+  parameters_setValue( PARAM_WATER_VOL_READ, 0 );
   ctx.enable_water_req = true;
   ctx.on_off_water = on_off;
 }

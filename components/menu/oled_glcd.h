@@ -1,6 +1,6 @@
 #ifndef OLED_GLCD_H
 #define OLED_GLDC_H
-#include "config.h"
+#include "app_config.h"
 
 /** Structure describes font format in memory */
 typedef struct

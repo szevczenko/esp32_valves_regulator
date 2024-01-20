@@ -1,4 +1,4 @@
-#include "config.h"
+#include "app_config.h"
 #include "fast_add.h"
 
 #define FAST_ADD_LIST_SIZE 8

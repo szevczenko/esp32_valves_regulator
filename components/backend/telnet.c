@@ -27,7 +27,7 @@
 #include "freertos/task.h"
 
 #include "freertos/queue.h"
-#include "config.h"
+#include "app_config.h"
 
 #include "wifidrv.h"
 

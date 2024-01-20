@@ -2,8 +2,8 @@
 #define MENU_BACKEND_H_
 
 void menuBackendInit(void);
-void backendEnterMenuParameters(void);
-void backendExitMenuParameters(void);
+void backendEnterparameterseters(void);
+void backendExitparameterseters(void);
 void backendToggleEmergencyDisable(void);
 void backendEnterMenuStart(void);
 void backendExitMenuStart(void);

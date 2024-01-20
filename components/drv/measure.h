@@ -1,7 +1,7 @@
 #ifndef _MEASURE_H
 #define _MEASURE_H
 
-#include "config.h"
+#include "app_config.h"
 
 #define ACCUMULATOR_SIZE_TAB 20
 #define ACCUMULATOR_ADC_CH 0 //0.028 [V/adc]
