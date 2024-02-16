@@ -443,6 +443,25 @@ static const char* dictionary_phrases[DICT_TOP][LANGUAGE_CNT_SUPPORT] = {
                              "Сервер тайм-аута",
                              "Przekroczono czas \n odpowiedzi serwera",
                              "  Zeitüberschreitung\n         Server" },
+  [DICT_PULSES_PER_LITER] =
+    {
+                             "Pulses per liter",
+                             "Импульсов на литр",
+                             "Impulsy na litr",
+                             "Impulse pro Liter" },
+  [DICT_PWM_VALVE] =
+    {
+                             "PWM valve",
+                             "ШИМ наполнение",
+                             "PWM zaworu",
+                             "Ventil PWM" },
+
+  [DICT_TANK_SIZE] =
+    {
+                             "Tank size",
+                             "Размер бака",
+                             "Rozmiar zbiorniku",
+                             "Tankgröße" },
 };
 
 void dictionary_init( void )

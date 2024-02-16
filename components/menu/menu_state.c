@@ -123,7 +123,7 @@ static void menu_button_exit_callback( void* arg )
     NULL_ERROR_MSG();
     return;
   }
-  menuExit( menu );
+  menuDrv_Exit( menu );
 }
 
 static bool menu_button_init_cb( void* arg )

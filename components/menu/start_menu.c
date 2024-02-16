@@ -217,7 +217,7 @@ static void menu_button_up_callback( void* arg )
 
   if ( ctx.substate == SUBSTATE_WATER_ADD )
   {
-    if ( ctx.data.water_volume_l < parameters_getMaxValue( PARAM_WATER_VOL_ADD ) )
+    if ( ctx.data.water_volume_l < parameters_getValue( PARAM_TANK_SIZE ) )
     {
       ctx.data.water_volume_l += 10;
     }
@@ -235,11 +235,11 @@ static void menu_button_up_time_cb( void* arg )
 
   if ( ctx.substate == SUBSTATE_WATER_ADD )
   {
-    fastProcessStart( &ctx.data.water_volume_l, parameters_getMaxValue( PARAM_WATER_VOL_ADD ), 1, FP_PLUS_10, fast_add_callback );
+    fastProcessStart( &ctx.data.water_volume_l, parameters_getValue( PARAM_TANK_SIZE ), 1, FP_PLUS_10, fast_add_callback );
   }
   else
   {
-    enterparameterseters();
+    menuDrv_EnterToParameters();
   }
 }
 
@@ -284,11 +284,11 @@ static void menu_button_down_time_cb( void* arg )
 
   if ( ctx.substate == SUBSTATE_WATER_ADD )
   {
-    fastProcessStart( &ctx.data.water_volume_l, parameters_getMaxValue( PARAM_WATER_VOL_ADD ), 1, FP_MINUS_10, fast_add_callback );
+    fastProcessStart( &ctx.data.water_volume_l, parameters_getValue( PARAM_TANK_SIZE ), 0, FP_MINUS_10, fast_add_callback );
   }
   else
   {
-    enterparameterseters();
+    menuDrv_EnterToParameters();
   }
 }
 
@@ -303,7 +303,16 @@ static void menu_button_exit_callback( void* arg )
     return;
   }
   _reset_error();
-  menuExit( menu );
+  if ( ctx.substate == SUBSTATE_MAIN )
+  {
+    menuDrv_Exit( menu );
+  }
+  else
+  {
+    backendSetWater( false );
+    ctx.substate = SUBSTATE_MAIN;
+  }
+
   ctx.exit_wait_flag = true;
 }
 
@@ -666,38 +675,106 @@ static void _substate_main( void )
 
   oled_printFixed( 2, MENU_HEIGHT, buff_on, OLED_FONT_SIZE_11 );
   oled_printFixed( 2, MENU_HEIGHT * 2, buff_off, OLED_FONT_SIZE_11 );
+}
 
-  if ( ctx.animation_timeout < xTaskGetTickCount() )
+static void _get_liters_coordinate_and_size( uint32_t value, uint8_t* x, uint8_t* y, enum oledFontSize* font )
+{
+  *x = 40;
+  *y = 25;
+  *font = OLED_FONT_SIZE_26;
+  if ( value < 10 )
   {
-    ctx.animation_cnt++;
-    ctx.animation_timeout = xTaskGetTickCount() + MS2ST( 100 );
+    *x = 40;
+  }
+  else if ( value < 100 )
+  {
+    *x = 30;
+  }
+  else if ( value < 1000 )
+  {
+    *x = 20;
+  }
+  else if ( value < 10000 )
+  {
+    *x = 17;
+  }
+  else
+  {
+    *font = OLED_FONT_SIZE_16;
+    *x = 20;
+    *y = 30;
   }
 }
 
 static void _substate_add_water( void )
 {
   static char buff_water[64];
-
-  oled_printFixed( 2, MENU_HEIGHT, "WATER ADD:", OLED_FONT_SIZE_11 );
+  ssdFigure_DrawArrow( 2, 10, true );
+  ssdFigure_DrawArrow( 2, 38, false );
+  ssdFigure_DrawValve( 105, 15, false );
+  ssdFigure_DrawTank( 90, 40, ctx.data.water_volume_l * 100 / parameters_getValue( PARAM_TANK_SIZE ) );
+  oled_printFixed( 20, 2, "ADD WATER:", OLED_FONT_SIZE_11 );
   sprintf( buff_water, "%ld [l]", ctx.data.water_volume_l );
-  oled_printFixed( 60, MENU_HEIGHT * 2, buff_water, OLED_FONT_SIZE_11 );
+
+  uint8_t x_liters;
+  uint8_t y_liters;
+  enum oledFontSize font_liters;
+  _get_liters_coordinate_and_size( ctx.data.water_volume_l, &x_liters, &y_liters, &font_liters );
+  oled_printFixed( x_liters, y_liters, buff_water, font_liters );
 }
 
 static void _substate_apply_water( void )
 {
-  oled_printFixed( 2, MENU_HEIGHT, "Add water?", OLED_FONT_SIZE_11 );
+  oled_printFixed( 2, 2, "Add water?", OLED_FONT_SIZE_11 );
+  oled_printFixed( 11, 14, "Yes", OLED_FONT_SIZE_11 );
+  oled_printFixed( 98, 14, "No", OLED_FONT_SIZE_11 );
+  ssdFigure_DrawAcceptButton( 2, 26 );
+  ssdFigure_DrawDeclineButton( 88, 26 );
 }
 
 static void _substate_wait_water_add( void )
 {
   static char buff_water[64];
   uint32_t water_added = parameters_getValue( PARAM_WATER_VOL_READ );
-  sprintf( buff_water, "Water in tank %ld [l]", water_added );
-  oled_printFixed( 2, MENU_HEIGHT, buff_water, OLED_FONT_SIZE_11 );
+  uint16_t water_flow_state = parameters_getValue( PARAM_WATER_FLOW_STATE );
+
+  if ( water_flow_state == 0 )
+  {
+    oled_printFixed( 2, 2, "Water added:", OLED_FONT_SIZE_11 );
+    ssdFigure_DrawValveAnimation( 105, 15, ctx.animation_cnt );
+  }
+  else if ( water_flow_state == 1 )
+  {
+    oled_printFixed( 2, 2, "No water flow", OLED_FONT_SIZE_11 );
+    ssdFigure_DrawValve( 105, 15, false );
+  }
+  else
+  {
+    oled_printFixed( 2, 2, "Error water flow", OLED_FONT_SIZE_11 );
+    ssdFigure_DrawValve( 105, 15, true );
+  }
+
+  ssdFigure_DrawTank( 90, 40, water_added * 100 / parameters_getValue( PARAM_TANK_SIZE ) );
+  sprintf( buff_water, "%ld [l]", water_added );
+
+  uint8_t x_liters;
+  uint8_t y_liters;
+  enum oledFontSize font_liters;
+  _get_liters_coordinate_and_size( water_added, &x_liters, &y_liters, &font_liters );
+  oled_printFixed( x_liters, y_liters, buff_water, font_liters );
 
   if ( water_added > ctx.data.water_volume_l - 10 || !parameters_getValue( PARAM_ADD_WATER ) )
   {
     ctx.substate = SUBSTATE_MAIN;
+    if ( parameters_getValue( PARAM_ADD_WATER ) )
+    {
+      backendSetWater( false );
+    }
+  }
+  if ( ctx.animation_timeout < xTaskGetTickCount() )
+  {
+    ctx.animation_cnt++;
+    ctx.animation_timeout = xTaskGetTickCount() + MS2ST( 200 );
   }
 }
 
@@ -801,6 +878,7 @@ static void start_menu_info( void )
 
 static void start_menu_stop( void )
 {
+  backendSetWater( false );
 }
 
 static void start_menu_error_check( void )

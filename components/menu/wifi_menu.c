@@ -159,7 +159,7 @@ static void menu_button_exit_callback(void *arg)
         return;
     }
 
-    menuExit(menu);
+    menuDrv_Exit(menu);
 }
 
 static bool menu_button_init_cb(void *arg)
@@ -516,7 +516,7 @@ static void menu_wifi_connected(menu_token_t *menu)
     else
     {
         osDelay(1000);
-        menuExit(menu);
+        menuDrv_Exit(menu);
         enterMenuStart();
     }
 }

@@ -80,7 +80,7 @@ void enterMenuStart(void)
     menuEnter(&start_menu);
 }
 
-void enterparameterseters(void)
+void menuDrv_EnterToParameters(void)
 {
     menuEnter(&parameters_menu);
 }

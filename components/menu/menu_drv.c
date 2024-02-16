@@ -755,7 +755,7 @@ void menuSetMain( menu_token_t* menu )
   }
 }
 
-void menuExit( menu_token_t* menu )
+void menuDrv_Exit( menu_token_t* menu )
 {
   ctx.exit_req = true;
   update_screen();
@@ -821,7 +821,7 @@ void init_menu( menu_drv_init_t init_type )
   }
   else
   {
-    if ( parameters_getValue( PARAM_BOOTUP_SYSTEM ) )
+    if ( parameters_getValue( PARAM_BOOT_UP_SYSTEM ) )
     {
       menuInitBootupMenu();
     }

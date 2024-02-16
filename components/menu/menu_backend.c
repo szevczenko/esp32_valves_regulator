@@ -1,8 +1,8 @@
 #include <stdbool.h>
 
+#include "app_config.h"
 #include "but.h"
 #include "cmd_client.h"
-#include "app_config.h"
 #include "freertos/semphr.h"
 #include "menu.h"
 #include "menu_drv.h"
@@ -48,7 +48,7 @@ typedef struct
   bool menu_param_is_active;
   bool emergency_msg_sended;
   bool emergency_exit_msg_sended;
-  bool emergensy_req;
+  bool emergency_req;
 
   bool send_all_data;
   struct menu_data sended_data;
@@ -118,7 +118,7 @@ static void _send_emergency_msg( void )
 
 static void _check_emergency_disable( void )
 {
-  if ( ctx.emergensy_req )
+  if ( ctx.emergency_req )
   {
     _enter_emergency();
   }
@@ -150,20 +150,21 @@ static void backend_idle( void )
 static bool _check_error( void )
 {
   cmdClientGetValue( PARAM_MACHINE_ERRORS, NULL, 2000 );
-  uint32_t errors = parameters_getValue( PARAM_MACHINE_ERRORS );
+  cmdClientGetValue( PARAM_WATER_FLOW_STATE, NULL, 2000 );
+  // uint32_t errors = parameters_getValue( PARAM_MACHINE_ERRORS );
 
-  if ( errors > 0 )
-  {
-    for ( uint8_t i = 0; i < ERROR_TOP; i++ )
-    {
-      if ( errors & ( 1 << i ) )
-      {
-        menuStartSetError( i );
-      }
-    }
+  // if ( errors > 0 )
+  // {
+  //   for ( uint8_t i = 0; i < ERROR_TOP; i++ )
+  //   {
+  //     if ( errors & ( 1 << i ) )
+  //     {
+  //       menuStartSetError( i );
+  //     }
+  //   }
 
-    return true;
-  }
+  //   return true;
+  // }
 
   return false;
 }
@@ -185,7 +186,7 @@ static void backend_start( void )
     cmdClientGetValue( PARAM_VOLTAGE_ACCUM, NULL, 2000 );
     cmdClientGetValue( PARAM_LOW_LEVEL_SILOS, NULL, 2000 );
     cmdClientGetValue( PARAM_SILOS_LEVEL, NULL, 2000 );
-    cmdClientGetValue( PARAM_SILOS_SENSOR_IS_CONECTED, NULL, 2000 );
+    cmdClientGetValue( PARAM_SILOS_SENSOR_IS_CONNECTED, NULL, 2000 );
   }
 
   ctx.get_data_cnt++;
@@ -230,6 +231,9 @@ static void backend_start( void )
       }
       ctx.sended_data.water_volume_l = data->water_volume_l;
     }
+
+    cmdClientSetValue( PARAM_PULSES_PER_LITER, parameters_getValue( PARAM_PULSES_PER_LITER ), 1000 );
+    cmdClientSetValue( PARAM_PWM_VALVE, parameters_getValue( PARAM_PWM_VALVE ), 1000 );
   }
 
   if ( ctx.enable_water_req )
@@ -273,7 +277,7 @@ static void backend_error_check( void )
 static void backend_emergency_disable_state( void )
 {
   _send_emergency_msg();
-  if ( !ctx.emergensy_req )
+  if ( !ctx.emergency_req )
   {
     LOG( PRINT_INFO, "%s exit", __func__ );
     menuDrvExitEmergencyDisable();
@@ -331,15 +335,15 @@ void backendSetWater( bool on_off )
 
 void backendToggleEmergencyDisable( void )
 {
-  if ( ctx.emergensy_req )
+  if ( ctx.emergency_req )
   {
-    ctx.emergensy_req = false;
+    ctx.emergency_req = false;
   }
   else
   {
     if ( wifiDrvIsConnected() && cmdClientIsConnected() )
     {
-      ctx.emergensy_req = true;
+      ctx.emergency_req = true;
     }
   }
 }

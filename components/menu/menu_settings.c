@@ -1,7 +1,7 @@
 #include "menu_settings.h"
 
-#include "cmd_client.h"
 #include "app_config.h"
+#include "cmd_client.h"
 #include "fast_add.h"
 #include "led.h"
 #include "menu.h"
@@ -37,6 +37,9 @@ typedef enum
   SETTINGS_BRIGHTNESS,
   SETTINGS_LANGUAGE,
   SETTINGS_POWER_ON_MIN,
+  SETTINGS_PULSES_PER_LITER,
+  SETTINGS_PWM_VALVE,
+  SETTINGS_TANK_SIZE,
   SETTINGS_TOP,
 } parameters_type_t;
 
@@ -87,6 +90,21 @@ static void get_min_brightness( uint32_t* value );
 static void enter_brightness( void );
 static void exit_brightness( void );
 
+static void get_pulses_per_liter( uint32_t* value );
+static void get_max_pulses_per_liter( uint32_t* value );
+static void get_min_pulses_per_liter( uint32_t* value );
+static void set_pulses_per_liter( uint32_t value );
+
+static void get_pwm_valve( uint32_t* value );
+static void get_max_pwm_valve( uint32_t* value );
+static void get_min_pwm_valve( uint32_t* value );
+static void set_pwm_valve( uint32_t value );
+
+static void get_tank_size( uint32_t* value );
+static void get_max_tank_size( uint32_t* value );
+static void get_min_tank_size( uint32_t* value );
+static void set_tank_size( uint32_t value );
+
 static const char* language[] =
   {
     [DICT_LANGUAGE_ENGLISH] = "English",
@@ -132,6 +150,32 @@ static parameters_t parameters_list[] =
                               .set_value = set_power_on_min,
                               .get_max_value = get_max_power_on_min,
                               .get_min_value = get_min_power_on_min },
+    [SETTINGS_PULSES_PER_LITER] =
+      { .name_dict = DICT_PULSES_PER_LITER,
+                              .unit_type = UNIT_INT,
+                              .unit_name = "[p / l]",
+                              .get_value = get_pulses_per_liter,
+                              .set_value = set_pulses_per_liter,
+                              .get_max_value = get_max_pulses_per_liter,
+                              .get_min_value = get_min_pulses_per_liter },
+
+    [SETTINGS_PWM_VALVE] =
+      {
+                              .name_dict = DICT_PWM_VALVE,
+                              .unit_name = "[%]",
+                              .get_value = get_pwm_valve,
+                              .set_value = set_pwm_valve,
+                              .get_max_value = get_max_pwm_valve,
+                              .get_min_value = get_min_pwm_valve },
+
+    [SETTINGS_TANK_SIZE] =
+      {
+                              .name_dict = DICT_TANK_SIZE,
+                              .unit_name = "[%]",
+                              .get_value = get_tank_size,
+                              .set_value = set_tank_size,
+                              .get_max_value = get_max_tank_size,
+                              .get_min_value = get_min_tank_size },
 };
 
 static scrollBar_t scrollBar =
@@ -140,6 +184,66 @@ static scrollBar_t scrollBar =
     .y_start = MENU_HEIGHT };
 
 static menu_state_t _state;
+
+static void get_pulses_per_liter( uint32_t* value )
+{
+  *value = parameters_getValue( PARAM_PULSES_PER_LITER );
+}
+
+static void get_max_pulses_per_liter( uint32_t* value )
+{
+  *value = parameters_getMaxValue( PARAM_PULSES_PER_LITER );
+}
+
+static void get_min_pulses_per_liter( uint32_t* value )
+{
+  *value = parameters_getMinValue( PARAM_PULSES_PER_LITER );
+}
+
+static void set_pulses_per_liter( uint32_t value )
+{
+  parameters_setValue( PARAM_PULSES_PER_LITER, value );
+}
+
+static void get_pwm_valve( uint32_t* value )
+{
+  *value = parameters_getValue( PARAM_PWM_VALVE );
+}
+
+static void get_max_pwm_valve( uint32_t* value )
+{
+  *value = parameters_getMaxValue( PARAM_PWM_VALVE );
+}
+
+static void get_min_pwm_valve( uint32_t* value )
+{
+  *value = parameters_getMinValue( PARAM_PWM_VALVE );
+}
+
+static void set_pwm_valve( uint32_t value )
+{
+  parameters_setValue( PARAM_PWM_VALVE, value );
+}
+
+static void get_tank_size( uint32_t* value )
+{
+  *value = parameters_getValue( PARAM_TANK_SIZE );
+}
+
+static void get_max_tank_size( uint32_t* value )
+{
+  *value = parameters_getMaxValue( PARAM_TANK_SIZE );
+}
+
+static void get_min_tank_size( uint32_t* value )
+{
+  *value = parameters_getMinValue( PARAM_TANK_SIZE );
+}
+
+static void set_tank_size( uint32_t value )
+{
+  parameters_setValue( PARAM_TANK_SIZE, value );
+}
 
 static void get_power_on_min( uint32_t* value )
 {
@@ -179,7 +283,7 @@ static void set_language( uint32_t value )
 
 static void get_bootup( uint32_t* value )
 {
-  *value = parameters_getValue( PARAM_BOOTUP_SYSTEM );
+  *value = parameters_getValue( PARAM_BOOT_UP_SYSTEM );
 }
 
 static void get_buzzer( uint32_t* value )
@@ -189,7 +293,7 @@ static void get_buzzer( uint32_t* value )
 
 static void get_max_bootup( uint32_t* value )
 {
-  *value = parameters_getMaxValue( PARAM_BOOTUP_SYSTEM );
+  *value = parameters_getMaxValue( PARAM_BOOT_UP_SYSTEM );
 }
 
 static void get_max_buzzer( uint32_t* value )
@@ -199,7 +303,7 @@ static void get_max_buzzer( uint32_t* value )
 
 static void set_bootup( uint32_t value )
 {
-  parameters_setValue( PARAM_BOOTUP_SYSTEM, value );
+  parameters_setValue( PARAM_BOOT_UP_SYSTEM, value );
 }
 
 static void set_buzzer( uint32_t value )
@@ -319,7 +423,7 @@ static void menu_button_down_callback( void* arg )
 
   menu->last_button = LAST_BUTTON_DOWN;
 
-  if ( menu->position < SETTINGS_POWER_ON_MIN - 1 )
+  if ( menu->position < SETTINGS_TOP - 1 )
   {
     menu->position++;
   }
@@ -524,7 +628,7 @@ static void menu_button_exit_callback( void* arg )
     return;
   }
 
-  menuExit( menu );
+  menuDrv_Exit( menu );
 }
 
 static bool menu_button_init_cb( void* arg )

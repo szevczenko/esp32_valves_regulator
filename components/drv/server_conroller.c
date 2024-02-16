@@ -48,7 +48,7 @@ typedef struct
 
   bool water_on;
   uint32_t water_volume_l;
-  uint32_t water_read_vol;
+  uint32_t water_read_cl;    // value in centi liter: 1 l = 100 cl
   struct valve_data valves[CFG_VALVE_CNT];
 
   bool working_state_req;
@@ -106,19 +106,15 @@ static void count_working_data( void )
 {
 }
 
-static void _reset_pulse_counter( void )
-{
-}
-
 static void _on_valve( struct valve_data* valve )
 {
   printf( "[VALVE] %d ON\n\r", valve->gpio );
-  PWMDrv_SetDuty( &ctx.valve_pwm, 50 );
+  PWMDrv_SetDuty( &ctx.valve_pwm, (float) parameters_getValue( PARAM_PWM_VALVE ) );
   gpio_set_level( valve->gpio, 1 );
   osDelay( 20 );
   PWMDrv_SetDuty( &ctx.valve_pwm, 100 );
   osDelay( 80 );
-  PWMDrv_SetDuty( &ctx.valve_pwm, 50 );
+  PWMDrv_SetDuty( &ctx.valve_pwm, (float) parameters_getValue( PARAM_PWM_VALVE ) );
   valve->state = 1;
 }
 
@@ -156,8 +152,25 @@ static void set_working_data( void )
   }
 }
 
-static void water_flow_alert_callback( uint32_t value )
+static void water_flow_event_callback( water_flow_sensor_event_t event, uint32_t value )
 {
+  switch ( event )
+  {
+    case WATER_FLOW_SENSOR_EVENT_WATER_FLOW_BACK:
+      parameters_setValue( PARAM_WATER_FLOW_STATE, 0 );
+      break;
+
+    case WATER_FLOW_SENSOR_EVENT_NO_WATER_SHORT_PERIOD:
+      parameters_setValue( PARAM_WATER_FLOW_STATE, 1 );
+      break;
+
+    case WATER_FLOW_SENSOR_EVENT_NO_WATER_LONG_PERIOD:
+      parameters_setValue( PARAM_WATER_FLOW_STATE, 2 );
+      break;
+
+    default:
+      break;
+  }
 }
 
 static void state_init( void )
@@ -174,7 +187,7 @@ static void state_init( void )
     gpio_config( &io_conf );
   }
 
-  WaterFlowSensor_Init( &ctx.water_flow_sensor, "valve1", "L", water_flow_alert_callback, 10 );
+  WaterFlowSensor_Init( &ctx.water_flow_sensor, "valve1", parameters_getValue( PARAM_PULSES_PER_LITER ), water_flow_event_callback, 34 );
   PWMDrv_Init( &ctx.valve_pwm, "valve_pwm", PWM_DRV_DUTY_MODE_LOW, 1000, 0, CFG_VALVE_CURRENT_REGULATION_PIN );
 
   parameters_setValue( PARAM_VALVE_1_STATE, 0 );
@@ -189,6 +202,7 @@ static void state_init( void )
   parameters_setValue( PARAM_WATER_VOL_READ, 0 );
   parameters_setValue( PARAM_MACHINE_ERRORS, 0 );
   parameters_setValue( PARAM_START_SYSTEM, 0 );
+  parameters_setValue( PARAM_WATER_FLOW_STATE, 0 );
 
   change_state( STATE_IDLE );
 }
@@ -245,22 +259,24 @@ static void state_working( void )
 
   if ( !ctx.water_on && parameters_getValue( PARAM_ADD_WATER ) )
   {
-    _reset_pulse_counter();
-    ctx.water_read_vol = 0;
+    WaterFlowSensor_StartMeasure( &ctx.water_flow_sensor );
+    ctx.water_read_cl = 0;
   }
 
   ctx.water_on = parameters_getValue( PARAM_ADD_WATER );
 
-  if ( ctx.water_read_vol >= ctx.water_volume_l )
+  if ( ctx.water_read_cl >= WATER_FLOW_CONVERT_L_TO_CL( ctx.water_volume_l ) )
   {
+    WaterFlowSensor_StopMeasure( &ctx.water_flow_sensor );
     parameters_setValue( PARAM_ADD_WATER, 0 );
     ctx.water_on = false;
   }
 
   parameters_setValue( PARAM_VALVE_6_STATE, ctx.water_on );
-  parameters_setValue( PARAM_WATER_VOL_READ, ctx.water_read_vol );
+  parameters_setValue( PARAM_WATER_VOL_READ, ctx.water_read_cl );
 
-  ctx.water_read_vol++;
+  ctx.water_read_cl = WaterFlowSensor_GetValue( &ctx.water_flow_sensor );
+  WaterFlowSensor_SetPulsesPerLiter( &ctx.water_flow_sensor, parameters_getValue( PARAM_PULSES_PER_LITER ) );
 
   osDelay( 100 );
 }

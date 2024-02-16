@@ -79,7 +79,7 @@ static void menu_button_exit_callback(void *arg)
         return;
     }
 
-    // menuExit(menu);
+    // menuDrv_Exit(menu);
     menuEnter(menu->menu_list[0]);
 }
 
