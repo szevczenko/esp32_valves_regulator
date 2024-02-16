@@ -28,6 +28,7 @@
 #include "sleep_e.h"
 #include "ssd1306.h"
 #include "wifidrv.h"
+#include "mongoose_drv.h"
 
 extern void ultrasonar_start( void );
 
@@ -149,6 +150,7 @@ void app_main()
     io_conf.pull_up_en = 0;
     gpio_config( &io_conf );
     gpio_set_level( blink_pin, 1 );
+    MongooseDrv_Init();
   }
 
   config_printf( PRINT_DEBUG, PRINT_DEBUG, "[MENU] ------------START SYSTEM-------------" );

@@ -152,7 +152,9 @@
             "mcpwm_prelude.h": "c",
             "start_menu.h": "c",
             "ssdfigure.h": "c",
-            "timers.h": "c"
+            "timers.h": "c",
+            "mongoose.h": "c",
+            "esp_timer.h": "c"
         },
         "cSpell.words": [
             "centi",
