@@ -22,6 +22,7 @@ typedef void ( *param_set_cb )( void* user_data, uint32_t value );
 
 typedef enum
 {
+  PARAM_CONTROLLER_SN,
   PARAM_VALVE_1_STATE,
   PARAM_VALVE_2_STATE,
   PARAM_VALVE_3_STATE,
@@ -59,9 +60,9 @@ typedef enum
 
 typedef struct
 {
-  uint16_t min_value;
-  uint16_t max_value;
-  uint16_t default_value;
+  uint32_t min_value;
+  uint32_t max_value;
+  uint32_t default_value;
   const char* name;
 
   void* user_data;

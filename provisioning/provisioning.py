@@ -10,13 +10,16 @@ from parttool import *
 
 PARTITION_NAME = "dev_config"
 
-DEV_CONF_BIN_FILE = "device_config.bin"
-DEV_CONF_CSV_FILE = "device_config.csv"
+DEV_CONF_FILE_PATH = "generate"
+DEV_CONF_BIN_FILE = f"{DEV_CONF_FILE_PATH}/device_config.bin"
+DEV_CONF_CSV_FILE = f"{DEV_CONF_FILE_PATH}/device_config.csv"
 DEV_CONF_STORAGE_NAME = "config"
 DEV_CONF_SN = 5
 
 def write_config_to_target(dev="COM9", SN=DEV_CONF_SN):
     dev_config_str = f'# AAD csv file\nkey,type,encoding,value\n{DEV_CONF_STORAGE_NAME},namespace,,\nSN,data,u32,{SN}'
+    if not os.path.exists(DEV_CONF_FILE_PATH):
+        os.mkdir(DEV_CONF_FILE_PATH) 
     f = open(DEV_CONF_CSV_FILE, "w")
     f.write(dev_config_str)
     f.close()

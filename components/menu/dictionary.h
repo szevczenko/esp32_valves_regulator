@@ -97,6 +97,7 @@ enum dictionary_phrase
   DICT_PULSES_PER_LITER,
   DICT_PWM_VALVE,
   DICT_TANK_SIZE,
+  DICT_SERIAL_NUMBER,
   DICT_TOP
 };
 

@@ -6,7 +6,6 @@
 #include "cmd_client.h"
 #include "fast_add.h"
 #include "freertos/timers.h"
-
 #include "menu_backend.h"
 #include "menu_default.h"
 #include "menu_drv.h"

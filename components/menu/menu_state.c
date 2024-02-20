@@ -1,6 +1,7 @@
+#include <string.h>
+
 #include "app_config.h"
 #include "cmd_client.h"
-
 #include "menu_backend.h"
 #include "menu_default.h"
 #include "menu_drv.h"
@@ -23,8 +24,9 @@ typedef enum
 {
   PARAM_CURRENT,
   PARAM_VOLTAGE,
-  PARAM_CONECTION,
+  PARAM_CONNECTION,
   PARAM_SIGNAL,
+  PARAM_SN,
   PARAM_TOP
 
 } parameters_type_t;
@@ -35,6 +37,7 @@ typedef enum
   UNIT_DOUBLE,
   UNIT_ON_OFF,
   UNIT_BOOL,
+  UNIT_STR,
 } unit_type_t;
 
 typedef struct
@@ -42,21 +45,25 @@ typedef struct
   enum dictionary_phrase name_dict;
   char* unit;
   uint32_t value;
+  char* value_str;
   unit_type_t unit_type;
   void ( *get_value )( uint32_t* value );
+  void ( *get_str )( char** value );
 } parameters_t;
 
 static void get_current( uint32_t* value );
 static void get_voltage( uint32_t* value );
 static void get_signal( uint32_t* value );
-static void get_conection( uint32_t* value );
+static void get_connection( uint32_t* value );
+static void get_sn( char** value );
 
 static parameters_t parameters_list[] =
   {
-    [PARAM_CURRENT] = {.name_dict = DICT_CURRENT,  .unit = "A", .unit_type = UNIT_DOUBLE, .get_value = get_current  },
-    [PARAM_VOLTAGE] = { .name_dict = DICT_VOLTAGE, .unit = "V", .unit_type = UNIT_DOUBLE, .get_value = get_voltage  },
-    [PARAM_SIGNAL] = { .name_dict = DICT_SIGNAL,  .unit = "",  .unit_type = UNIT_INT,    .get_value = get_signal   },
-    [PARAM_CONECTION] = { .name_dict = DICT_CONNECT, .unit = "",  .unit_type = UNIT_BOOL,   .get_value = get_conection}
+    [PARAM_CURRENT] = {.name_dict = DICT_CURRENT,        .unit = "A", .unit_type = UNIT_DOUBLE, .get_value = get_current   },
+    [PARAM_VOLTAGE] = { .name_dict = DICT_VOLTAGE,       .unit = "V", .unit_type = UNIT_DOUBLE, .get_value = get_voltage   },
+    [PARAM_SIGNAL] = { .name_dict = DICT_SIGNAL,        .unit = "",  .unit_type = UNIT_INT,    .get_value = get_signal    },
+    [PARAM_CONNECTION] = { .name_dict = DICT_CONNECT,       .unit = "",  .unit_type = UNIT_BOOL,   .get_value = get_connection},
+    [PARAM_SN] = { .name_dict = DICT_SERIAL_NUMBER, .unit = "",  .unit_type = UNIT_STR,    .get_str = get_sn        },
 };
 
 static scrollBar_t scrollBar = {
@@ -78,9 +85,16 @@ static void get_signal( uint32_t* value )
   *value = wifiDrvGetRssi();
 }
 
-static void get_conection( uint32_t* value )
+static void get_connection( uint32_t* value )
 {
   *value = cmdClientIsConnected();
+}
+
+static void get_sn( char** value )
+{
+  static char serial_number[16];
+  sprintf( serial_number, "%.6ld", parameters_getValue( PARAM_CONTROLLER_SN ));
+  *value = serial_number;
 }
 
 static void menu_button_up_callback( void* arg )
@@ -184,7 +198,11 @@ static bool _connected_process( menu_token_t* menu )
 
   for ( int i = 0; i < PARAM_TOP; i++ )
   {
-    if ( parameters_list[i].get_value != NULL )
+    if ( parameters_list[i].unit_type == UNIT_STR && parameters_list[i].get_str != NULL )
+    {
+      parameters_list[i].get_str( &parameters_list[i].value_str );
+    }
+    else if ( parameters_list[i].get_value != NULL )
     {
       parameters_list[i].get_value( &parameters_list[i].value );
     }
@@ -219,6 +237,10 @@ static bool _connected_process( menu_token_t* menu )
     if ( parameters_list[pos].unit_type == UNIT_DOUBLE )
     {
       sprintf( buff, "%s:      %.2f %s", dictionary_get_string( parameters_list[pos].name_dict ), (float) parameters_list[pos].value / 100.0, parameters_list[pos].unit );
+    }
+    else if ( parameters_list[pos].unit_type == UNIT_STR && parameters_list[pos].value_str != NULL )
+    {
+      sprintf( buff, "%s:      %s", dictionary_get_string( parameters_list[pos].name_dict ), parameters_list[pos].value_str );
     }
     else
     {

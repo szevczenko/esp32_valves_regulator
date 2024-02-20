@@ -1,6 +1,5 @@
 #include "parameters.h"
 
-
 #include "nvs.h"
 #include "nvs_flash.h"
 #include "parse_cmd.h"
@@ -20,6 +19,7 @@
 
 static parameter_t parameters[] =
   {
+    [PARAM_CONTROLLER_SN] = { .max_value = UINT32_MAX, .default_value = 0, .name = "PARAM_CONTROLLER_SN" },
     [PARAM_VALVE_1_STATE] = { .max_value = 1, .default_value = 0, .name = "PARAM_VALVE_1_STATE" },
     [PARAM_VALVE_2_STATE] = { .max_value = 1, .default_value = 0, .name = "PARAM_VALVE_2_STATE" },
     [PARAM_VALVE_3_STATE] = { .max_value = 1, .default_value = 0, .name = "PARAM_VALVE_3_STATE" },

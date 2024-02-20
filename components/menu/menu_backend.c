@@ -185,6 +185,7 @@ static void backend_start( void )
     cmdClientGetValue( PARAM_LOW_LEVEL_SILOS, NULL, 2000 );
     cmdClientGetValue( PARAM_SILOS_LEVEL, NULL, 2000 );
     cmdClientGetValue( PARAM_SILOS_SENSOR_IS_CONNECTED, NULL, 2000 );
+    cmdClientGetValue( PARAM_CONTROLLER_SN, 0, 2000 );
   }
 
   ctx.get_data_cnt++;

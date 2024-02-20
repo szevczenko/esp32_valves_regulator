@@ -462,6 +462,12 @@ static const char* dictionary_phrases[DICT_TOP][LANGUAGE_CNT_SUPPORT] = {
                              "Размер бака",
                              "Rozmiar zbiorniku",
                              "Tankgröße" },
+  [DICT_SERIAL_NUMBER] =
+    {
+                             "SN",
+                             "SN",
+                             "SN",
+                             "SN" },
 };
 
 void dictionary_init( void )

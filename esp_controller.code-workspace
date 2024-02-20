@@ -160,7 +160,8 @@
             "parameters.h": "c",
             "error_code.h": "c",
             "keepalive.h": "c",
-            "menu_drv.h": "c"
+            "menu_drv.h": "c",
+            "mongoose_drv.h": "c"
         },
         "cSpell.words": [
             "centi",

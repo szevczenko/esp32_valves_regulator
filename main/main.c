@@ -19,6 +19,7 @@
 #include "intf/i2c/ssd1306_i2c.h"
 #include "keepalive.h"
 #include "measure.h"
+#include "menu_drv.h"
 #include "mongoose_drv.h"
 #include "nvs_flash.h"
 #include "oled.h"
@@ -29,7 +30,6 @@
 #include "sleep_e.h"
 #include "ssd1306.h"
 #include "wifidrv.h"
-#include "menu_drv.h"
 
 extern void ultrasonar_start( void );
 
