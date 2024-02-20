@@ -19,7 +19,8 @@
 #include "intf/i2c/ssd1306_i2c.h"
 #include "keepalive.h"
 #include "measure.h"
-#include "menu.h"
+#include "mongoose_drv.h"
+#include "nvs_flash.h"
 #include "oled.h"
 #include "parameters.h"
 #include "pcf8574.h"
@@ -28,17 +29,18 @@
 #include "sleep_e.h"
 #include "ssd1306.h"
 #include "wifidrv.h"
-#include "mongoose_drv.h"
+#include "menu_drv.h"
 
 extern void ultrasonar_start( void );
 
 static gpio_config_t io_conf;
 static uint32_t blink_pin = GPIO_NUM_23;
 portMUX_TYPE portMux = portMUX_INITIALIZER_UNLOCKED;
+static uint8_t wifi_type;
 
 static bool check_i2c_communication( void )
 {
-  ssd1306_i2cInitEx( I2C_EXAMPLE_MASTER_SCL_IO, I2C_EXAMPLE_MASTER_SDA_IO, SSD1306_I2C_ADDR );
+  ssd1306_i2cInitEx( I2C_MASTER_SCL_IO, I2C_MASTER_SDA_IO, SSD1306_I2C_ADDR );
   uint8_t s_i2c_addr = 0x3C;
   int ret;
   i2c_cmd_handle_t cmd = i2c_cmd_link_create();
@@ -50,18 +52,6 @@ static bool check_i2c_communication( void )
   i2c_cmd_link_delete( cmd );
   printf( "I2C TEST %d\n\r", ret );
   return ret == ESP_OK;
-}
-
-void debug_function_name( const char* name )
-{
-}
-
-void debug_last_task( char* task_name )
-{
-}
-
-void debug_last_out_task( char* task_name )
-{
 }
 
 void graphic_init( void )
@@ -80,21 +70,28 @@ static void checkDevType( void )
   bool read_i2c_value = check_i2c_communication();
   if ( read_i2c_value )
   {
-    config.wifi_type = T_WIFI_TYPE_CLIENT;
+    wifi_type = T_WIFI_TYPE_CLIENT;
   }
   else
   {
-    config.wifi_type = T_WIFI_TYPE_SERVER;
+    wifi_type = T_WIFI_TYPE_SERVER;
   }
+  wifiDrvSetWifiType( wifi_type );
+}
+
+void app_init( void )
+{
+  nvs_flash_init();
+  DevConfig_Init();
 }
 
 void app_main()
 {
-  configInit();
+  app_init();
   checkDevType();
   parameters_init();
 
-  if ( config.wifi_type != T_WIFI_TYPE_SERVER )
+  if ( wifi_type != T_WIFI_TYPE_SERVER )
   {
     graphic_init();
     battery_init();
@@ -116,7 +113,7 @@ void app_main()
 
     if ( voltage > 3.2 )
     {
-      init_menu( MENU_DRV_NORMAL_INIT );
+      menuDrvInit( MENU_DRV_NORMAL_INIT );
       wifiDrvInit();
       keepAliveStartTask();
       dictionary_init();
@@ -126,7 +123,7 @@ void app_main()
     }
     else
     {
-      init_menu( MENU_DRV_LOW_BATTERY_INIT );
+      menuDrvInit( MENU_DRV_LOW_BATTERY_INIT );
       power_on_disable_system();
     }
   }
@@ -153,18 +150,19 @@ void app_main()
     MongooseDrv_Init();
   }
 
-  config_printf( PRINT_DEBUG, PRINT_DEBUG, "[MENU] ------------START SYSTEM-------------" );
+  DevConfig_Printf( PRINT_DEBUG, PRINT_DEBUG, "[MENU] ------------START SYSTEM-------------" );
+  DevConfig_Printf( PRINT_DEBUG, PRINT_DEBUG, "[MENU] SN %.6ld", DevConfig_GetSerialNumber() );
   while ( 1 )
   {
     vTaskDelay( MS2ST( 250 ) );
-    if ( ( config.wifi_type == T_WIFI_TYPE_SERVER ) && !cmdServerIsWorking() )
+    if ( ( wifi_type == T_WIFI_TYPE_SERVER ) && !cmdServerIsWorking() )
     {
       gpio_set_level( blink_pin, 0 );
     }
 
     vTaskDelay( MS2ST( 750 ) );
 
-    if ( config.wifi_type == T_WIFI_TYPE_SERVER )
+    if ( wifi_type == T_WIFI_TYPE_SERVER )
     {
       gpio_set_level( blink_pin, 1 );
     }

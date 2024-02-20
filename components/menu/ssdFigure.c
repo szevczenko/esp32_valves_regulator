@@ -445,12 +445,12 @@ int ssdFigureDrawLoadBar( loadBar_t* figure )
 {
   if ( figure->width + figure->x > SSD1306_WIDTH )
   {
-    return FALSE;
+    return false;
   }
 
   if ( figure->height + figure->y > SSD1306_HEIGHT )
   {
-    return FALSE;
+    return false;
   }
 
   if ( figure->fill > 100 )
@@ -475,31 +475,31 @@ int ssdFigureDrawLoadBar( loadBar_t* figure )
     }
   }
 
-  return TRUE;
+  return true;
 }
 
 int ssdFigureDrawScrollBar( scrollBar_t* figure )
 {
   if ( figure == NULL )
   {
-    return FALSE;
+    return false;
   }
 
   if ( figure->y_start > SSD1306_HEIGHT )
   {
-    return FALSE;
+    return false;
   }
 
   if ( figure->all_line == 0 )
   {
-    return FALSE;
+    return false;
   }
 
   float width = (float) figure->line_max / ( (float) figure->all_line );
 
   if ( width >= 1.0 )
   {
-    return FALSE;
+    return false;
   }
 
   int width_px = width * ( SSD1306_HEIGHT - figure->y_start );
@@ -526,7 +526,7 @@ int ssdFigureDrawScrollBar( scrollBar_t* figure )
     }
   }
 
-  return TRUE;
+  return true;
 }
 
 int ssdFigureFillLine( int y_start, int height )
@@ -539,7 +539,7 @@ int ssdFigureFillLine( int y_start, int height )
     }
   }
 
-  return TRUE;
+  return true;
 }
 
 void ssdFigure_DrawTank( uint8_t x, uint8_t y, uint8_t filled )

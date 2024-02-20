@@ -1,5 +1,4 @@
 #include "app_config.h"
-#include "menu.h"
 #include "menu_drv.h"
 #include "stdarg.h"
 #include "stdint.h"
@@ -74,7 +73,6 @@ menu_token_t bootup_menu =
 
 static void change_state( state_bootup_t new_state )
 {
-  debug_function_name( __func__ );
   if ( ctx.state < STATE_TOP )
   {
     if ( ctx.state != new_state )
@@ -328,7 +326,7 @@ static bool menu_button_init_cb( void* arg )
   return true;
 }
 
-void menuInitBootupMenu( void )
+void menuInitBootUpMenu( void )
 {
   memset( &ctx, 0, sizeof( ctx ) );
   bootup_menu.menu_cb.enter = menu_enter_cb;

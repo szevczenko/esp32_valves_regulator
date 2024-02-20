@@ -68,7 +68,7 @@ SpaceAfterLogicalNot: false
 SpaceAroundPointerQualifiers: Default
 SpaceBeforeAssignmentOperators: true
 SpaceBeforeCaseColon: false
-SpaceBeforeParens: ControlStatements
+SpaceBeforeParents: ControlStatements
 SpaceBeforeSquareBrackets: false
 SpaceInEmptyBlock: false
 SpaceInEmptyParentheses: false

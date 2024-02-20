@@ -4,7 +4,7 @@
 #include "cmd_client.h"
 #include "fast_add.h"
 #include "led.h"
-#include "menu.h"
+
 #include "menu_backend.h"
 #include "menu_default.h"
 #include "menu_drv.h"
@@ -479,7 +479,6 @@ static void menu_button_plus_callback( void* arg )
 
 static void _fast_add_cb( uint32_t value )
 {
-  debug_function_name( __func__ );
   (void) value;
 }
 

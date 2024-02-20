@@ -6,7 +6,7 @@
 #include "cmd_client.h"
 #include "fast_add.h"
 #include "freertos/timers.h"
-#include "menu.h"
+
 #include "menu_backend.h"
 #include "menu_default.h"
 #include "menu_drv.h"
@@ -116,7 +116,6 @@ static char* state_name[] =
 
 static void change_state( state_start_menu_t new_state )
 {
-  debug_function_name( __func__ );
   if ( ctx.state < STATE_TOP )
   {
     if ( ctx.state != new_state )
@@ -208,8 +207,6 @@ static void fast_add_callback( uint32_t value )
 
 static void menu_button_up_callback( void* arg )
 {
-  debug_function_name( __func__ );
-
   if ( !default_button_process( arg ) )
   {
     return;
@@ -226,8 +223,6 @@ static void menu_button_up_callback( void* arg )
 
 static void menu_button_up_time_cb( void* arg )
 {
-  debug_function_name( __func__ );
-
   if ( !default_button_process( arg ) )
   {
     return;
@@ -245,8 +240,6 @@ static void menu_button_up_time_cb( void* arg )
 
 static void menu_button_up_down_pull_cb( void* arg )
 {
-  debug_function_name( __func__ );
-
   if ( !default_button_process( arg ) )
   {
     return;
@@ -257,8 +250,6 @@ static void menu_button_up_down_pull_cb( void* arg )
 
 static void menu_button_down_callback( void* arg )
 {
-  debug_function_name( __func__ );
-
   if ( !default_button_process( arg ) )
   {
     return;
@@ -275,8 +266,6 @@ static void menu_button_down_callback( void* arg )
 
 static void menu_button_down_time_cb( void* arg )
 {
-  debug_function_name( __func__ );
-
   if ( !default_button_process( arg ) )
   {
     return;
@@ -294,7 +283,6 @@ static void menu_button_down_time_cb( void* arg )
 
 static void menu_button_exit_callback( void* arg )
 {
-  debug_function_name( __func__ );
   menu_token_t* menu = arg;
 
   if ( menu == NULL )
@@ -318,8 +306,6 @@ static void menu_button_exit_callback( void* arg )
 
 static void menu_button_valve_5_cb( void* arg )
 {
-  debug_function_name( __func__ );
-
   if ( !default_button_process( arg ) )
   {
     return;
@@ -330,8 +316,6 @@ static void menu_button_valve_5_cb( void* arg )
 
 static void menu_button_add_water_cb( void* arg )
 {
-  debug_function_name( __func__ );
-
   if ( !default_button_process( arg ) )
   {
     return;
@@ -351,8 +335,6 @@ static void menu_button_add_water_cb( void* arg )
 
 static void menu_button_add_timer_cb( void* arg )
 {
-  debug_function_name( __func__ );
-
   if ( !default_button_process( arg ) )
   {
     return;
@@ -366,8 +348,6 @@ static void menu_button_add_timer_cb( void* arg )
 
 static void menu_button_valve_2_push_cb( void* arg )
 {
-  debug_function_name( __func__ );
-
   if ( !default_button_process( arg ) )
   {
     return;
@@ -378,8 +358,6 @@ static void menu_button_valve_2_push_cb( void* arg )
 
 static void menu_button_valve_2_time_cb( void* arg )
 {
-  debug_function_name( __func__ );
-
   if ( !default_button_process( arg ) )
   {
     return;
@@ -388,8 +366,6 @@ static void menu_button_valve_2_time_cb( void* arg )
 
 static void menu_button_valve_1_push_cb( void* arg )
 {
-  debug_function_name( __func__ );
-
   if ( !default_button_process( arg ) )
   {
     return;
@@ -400,8 +376,6 @@ static void menu_button_valve_1_push_cb( void* arg )
 
 static void menu_button_valve_1_time_cb( void* arg )
 {
-  debug_function_name( __func__ );
-
   if ( !default_button_process( arg ) )
   {
     return;
@@ -410,8 +384,6 @@ static void menu_button_valve_1_time_cb( void* arg )
 
 static void menu_button_valve_1_2_pull_cb( void* arg )
 {
-  debug_function_name( __func__ );
-
   if ( !default_button_process( arg ) )
   {
     return;
@@ -424,8 +396,6 @@ static void menu_button_valve_1_2_pull_cb( void* arg )
 
 static void menu_button_valve_4_push_cb( void* arg )
 {
-  debug_function_name( __func__ );
-
   if ( !default_button_process( arg ) )
   {
     return;
@@ -436,8 +406,6 @@ static void menu_button_valve_4_push_cb( void* arg )
 
 static void menu_button_valve_4_time_cb( void* arg )
 {
-  debug_function_name( __func__ );
-
   if ( !default_button_process( arg ) )
   {
     return;
@@ -446,8 +414,6 @@ static void menu_button_valve_4_time_cb( void* arg )
 
 static void menu_button_valve_3_push_cb( void* arg )
 {
-  debug_function_name( __func__ );
-
   if ( !default_button_process( arg ) )
   {
     return;
@@ -458,8 +424,6 @@ static void menu_button_valve_3_push_cb( void* arg )
 
 static void menu_button_valve_3_time_cb( void* arg )
 {
-  debug_function_name( __func__ );
-
   if ( !default_button_process( arg ) )
   {
     return;
@@ -468,8 +432,6 @@ static void menu_button_valve_3_time_cb( void* arg )
 
 static void menu_button_valve_3_4_pull_cb( void* arg )
 {
-  debug_function_name( __func__ );
-
   if ( !default_button_process( arg ) )
   {
     return;
@@ -480,7 +442,6 @@ static void menu_button_valve_3_4_pull_cb( void* arg )
 
 static void menu_button_on_off( void* arg )
 {
-  debug_function_name( __func__ );
   menu_token_t* menu = arg;
 
   if ( menu == NULL )
@@ -494,7 +455,6 @@ static void menu_button_on_off( void* arg )
 
 static bool menu_button_init_cb( void* arg )
 {
-  debug_function_name( __func__ );
   menu_token_t* menu = arg;
 
   if ( menu == NULL )
@@ -536,7 +496,6 @@ static bool menu_button_init_cb( void* arg )
 
 static bool menu_enter_cb( void* arg )
 {
-  debug_function_name( __func__ );
   menu_token_t* menu = arg;
 
   if ( menu == NULL )
@@ -563,8 +522,6 @@ static bool menu_enter_cb( void* arg )
 
 static bool menu_exit_cb( void* arg )
 {
-  debug_function_name( __func__ );
-
   backendExitMenuStart();
 
   menu_token_t* menu = arg;
@@ -613,13 +570,13 @@ static void menu_check_connection( void )
     LOG( PRINT_INFO, "START_MENU: cmdClientGetAllValue try %ld", i );
     osDelay( 250 );
 
-    if ( cmdClientSetValue( PARAM_EMERGENCY_DISABLE, 0, 1000 ) == TRUE )
+    if ( cmdClientSetValue( PARAM_EMERGENCY_DISABLE, 0, 1000 ) == true )
     {
       break;
     }
   }
 
-  if ( ret != TRUE )
+  if ( ret != true )
   {
     LOG( PRINT_INFO, "%s: error get parameters", __func__ );
     change_state( STATE_IDLE );
@@ -780,7 +737,6 @@ static void _substate_wait_water_add( void )
 
 static void start_menu_ready( void )
 {
-  debug_function_name( __func__ );
   if ( !backendIsConnected() )
   {
     menu_set_error_msg( dictionary_get_string( DICT_LOST_CONNECTION_WITH_SERVER ) );
@@ -871,7 +827,6 @@ static void start_menu_error( void )
 
 static void start_menu_info( void )
 {
-  debug_function_name( __func__ );
   osDelay( 2500 );
   change_state( ctx.last_state );
 }

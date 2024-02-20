@@ -1,6 +1,6 @@
-#include "cmd_client.h"
 #include "app_config.h"
-#include "menu.h"
+#include "cmd_client.h"
+
 #include "menu_backend.h"
 #include "menu_default.h"
 #include "menu_drv.h"

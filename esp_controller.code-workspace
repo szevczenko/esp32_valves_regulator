@@ -154,7 +154,13 @@
             "ssdfigure.h": "c",
             "timers.h": "c",
             "mongoose.h": "c",
-            "esp_timer.h": "c"
+            "esp_timer.h": "c",
+            "executor": "c",
+            "parse_cmd.h": "c",
+            "parameters.h": "c",
+            "error_code.h": "c",
+            "keepalive.h": "c",
+            "menu_drv.h": "c"
         },
         "cSpell.words": [
             "centi",

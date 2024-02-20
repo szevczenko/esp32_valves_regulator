@@ -4,7 +4,6 @@
 #include "but.h"
 #include "cmd_client.h"
 #include "freertos/semphr.h"
-#include "menu.h"
 #include "menu_drv.h"
 #include "parameters.h"
 #include "start_menu.h"
@@ -68,7 +67,6 @@ static char* state_name[] =
 
 static void change_state( state_backend_t new_state )
 {
-  debug_function_name( __func__ );
   if ( ctx.state < STATE_TOP )
   {
     if ( ctx.state != new_state )
@@ -216,13 +214,13 @@ static void backend_start( void )
 
     for ( int i = 0; i < CFG_VALVE_CNT; i++ )
     {
-      if ( cmdClientSetValue( PARAM_VALVE_1_STATE + i, data->valve[i].state, 1000 ) == TRUE )
+      if ( cmdClientSetValue( PARAM_VALVE_1_STATE + i, data->valve[i].state, 1000 ) == true )
       {
         pass_counter++;
       }
     }
 
-    if ( pass_counter == CFG_VALVE_CNT && ( cmdClientSetValue( PARAM_WATER_VOL_ADD, data->water_volume_l, 1000 ) == TRUE ) )
+    if ( pass_counter == CFG_VALVE_CNT && ( cmdClientSetValue( PARAM_WATER_VOL_ADD, data->water_volume_l, 1000 ) == true ) )
     {
       ctx.send_all_data = false;
       for ( int i = 0; i < CFG_VALVE_CNT; i++ )
@@ -238,7 +236,7 @@ static void backend_start( void )
 
   if ( ctx.enable_water_req )
   {
-    if ( cmdClientSetValue( PARAM_ADD_WATER, ctx.on_off_water, 1000 ) == TRUE )
+    if ( cmdClientSetValue( PARAM_ADD_WATER, ctx.on_off_water, 1000 ) == true )
     {
       ctx.enable_water_req = false;
     }
@@ -246,7 +244,7 @@ static void backend_start( void )
 
   if ( ctx.on_off_water && !ctx.enable_water_req )
   {
-    if ( cmdClientGetValue( PARAM_ADD_WATER, NULL, 2000 ) == TRUE )
+    if ( cmdClientGetValue( PARAM_ADD_WATER, NULL, 2000 ) == true )
     {
       ctx.on_off_water = parameters_getValue( PARAM_ADD_WATER );
     }
@@ -398,7 +396,6 @@ void menuBackendInit( void )
 
 bool backendIsConnected( void )
 {
-  debug_function_name( __func__ );
   if ( !wifiDrvIsConnected() )
   {
     LOG( PRINT_INFO, "START_MENU: WiFi not connected" );
