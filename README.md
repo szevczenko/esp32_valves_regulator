@@ -6,12 +6,18 @@ Build the project
 ```
 git clone --recurse-submodules https://github.com/szevczenko/esp32_valves_regulator.git
 ```
-4. Run ESP-IDF 5.1 CMD and enter to cloned folder.
-5. build by running command:
+4. Init submodules for hq_components:
+```
+cd hq_components
+git submodule update --init --recursive
+cd ..
+```
+5. Run ESP-IDF 5.1 CMD and enter to cloned folder.
+6. build by running command:
 ```
 idf.py build
 ```
-6. flash esp32:
+7. flash esp32:
 ```
 idf.py flash -p COM8
 ```
