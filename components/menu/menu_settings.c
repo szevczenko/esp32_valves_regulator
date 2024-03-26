@@ -171,7 +171,7 @@ static parameters_t parameters_list[] =
     [SETTINGS_TANK_SIZE] =
       {
                               .name_dict = DICT_TANK_SIZE,
-                              .unit_name = "[%]",
+                              .unit_name = "[l]",
                               .get_value = get_tank_size,
                               .set_value = set_tank_size,
                               .get_max_value = get_max_tank_size,
