@@ -16,10 +16,10 @@
 
 #define STORAGE_NAMESPACE   "parameters"
 #define PARAMETERS_TAB_SIZE PARAM_LAST_VALUE
+#define STR_SIZE            PARSE_CMD_MAX_STRING_LEN + 1
 
 static parameter_t parameters[] =
   {
-    [PARAM_CONTROLLER_SN] = { .max_value = UINT32_MAX, .default_value = 0, .name = "PARAM_CONTROLLER_SN" },
     [PARAM_VALVE_1_STATE] = { .max_value = 1, .default_value = 0, .name = "PARAM_VALVE_1_STATE" },
     [PARAM_VALVE_2_STATE] = { .max_value = 1, .default_value = 0, .name = "PARAM_VALVE_2_STATE" },
     [PARAM_VALVE_3_STATE] = { .max_value = 1, .default_value = 0, .name = "PARAM_VALVE_3_STATE" },
@@ -52,6 +52,7 @@ static parameter_t parameters[] =
 };
 
 static uint32_t parameters_value[PARAM_LAST_VALUE];
+static char parameters_string[PARAM_STR_LAST_VALUE][STR_SIZE];
 
 static bool _read_parameters( void )
 {
@@ -213,6 +214,31 @@ bool parameters_setValue( parameter_value_t val, uint32_t value )
 
   parameters_value[val] = value;
   //ToDo send to Drv
+  return true;
+}
+
+bool parameters_setString( parameter_string_t val, const char* str )
+{
+  if ( val >= PARAM_STR_LAST_VALUE || strlen( str ) >= PARSE_CMD_MAX_STRING_LEN )
+  {
+    return false;
+  }
+
+  memset( parameters_string[val], 0, STR_SIZE );
+  strcpy( parameters_string[val], str );
+
+  return true;
+}
+
+bool parameters_getString( parameter_string_t val, char* str, uint32_t str_len )
+{
+  if ( val >= PARAM_STR_LAST_VALUE || strlen( parameters_string[val] ) >= str_len )
+  {
+    return false;
+  }
+
+  strcpy( str, parameters_string[val] );
+
   return true;
 }
 

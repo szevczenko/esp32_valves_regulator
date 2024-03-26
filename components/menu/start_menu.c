@@ -569,7 +569,7 @@ static void menu_check_connection( void )
     LOG( PRINT_INFO, "START_MENU: cmdClientGetAllValue try %ld", i );
     osDelay( 250 );
 
-    if ( cmdClientSetValue( PARAM_EMERGENCY_DISABLE, 0, 1000 ) == true )
+    if ( cmdClientSetValue( PARAM_EMERGENCY_DISABLE, 0, 1000 ) == ERROR_CODE_OK )
     {
       break;
     }

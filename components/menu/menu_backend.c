@@ -97,14 +97,14 @@ static void _send_emergency_msg( void )
   }
 
   bool ret =
-    ( cmdClientSetValue( PARAM_EMERGENCY_DISABLE, 1, 2000 ) > 0 )
-    && ( cmdClientSetValue( PARAM_VALVE_1_STATE, 0, 2000 ) > 0 )
-    && ( cmdClientSetValue( PARAM_VALVE_2_STATE, 0, 2000 ) > 0 )
-    && ( cmdClientSetValue( PARAM_VALVE_3_STATE, 0, 2000 ) > 0 )
-    && ( cmdClientSetValue( PARAM_VALVE_4_STATE, 0, 2000 ) > 0 )
-    && ( cmdClientSetValue( PARAM_VALVE_5_STATE, 0, 2000 ) > 0 )
-    && ( cmdClientSetValue( PARAM_VALVE_6_STATE, 0, 2000 ) > 0 )
-    && ( cmdClientSetValue( PARAM_VALVE_7_STATE, 0, 2000 ) > 0 );
+    ( cmdClientSetValue( PARAM_EMERGENCY_DISABLE, 1, 2000 ) == ERROR_CODE_OK )
+    && ( cmdClientSetValue( PARAM_VALVE_1_STATE, 0, 2000 ) == ERROR_CODE_OK )
+    && ( cmdClientSetValue( PARAM_VALVE_2_STATE, 0, 2000 ) == ERROR_CODE_OK )
+    && ( cmdClientSetValue( PARAM_VALVE_3_STATE, 0, 2000 ) == ERROR_CODE_OK )
+    && ( cmdClientSetValue( PARAM_VALVE_4_STATE, 0, 2000 ) == ERROR_CODE_OK )
+    && ( cmdClientSetValue( PARAM_VALVE_5_STATE, 0, 2000 ) == ERROR_CODE_OK )
+    && ( cmdClientSetValue( PARAM_VALVE_6_STATE, 0, 2000 ) == ERROR_CODE_OK )
+    && ( cmdClientSetValue( PARAM_VALVE_7_STATE, 0, 2000 ) == ERROR_CODE_OK );
 
   LOG( PRINT_INFO, "%s %d", __func__, ret );
   if ( ret )
@@ -185,7 +185,7 @@ static void backend_start( void )
     cmdClientGetValue( PARAM_LOW_LEVEL_SILOS, NULL, 2000 );
     cmdClientGetValue( PARAM_SILOS_LEVEL, NULL, 2000 );
     cmdClientGetValue( PARAM_SILOS_SENSOR_IS_CONNECTED, NULL, 2000 );
-    cmdClientGetValue( PARAM_CONTROLLER_SN, 0, 2000 );
+    cmdClientGetString( PARAM_STR_CONTROLLER_SN, NULL, 0, 2000 );
   }
 
   ctx.get_data_cnt++;
@@ -215,13 +215,13 @@ static void backend_start( void )
 
     for ( int i = 0; i < CFG_VALVE_CNT; i++ )
     {
-      if ( cmdClientSetValue( PARAM_VALVE_1_STATE + i, data->valve[i].state, 1000 ) == true )
+      if ( cmdClientSetValue( PARAM_VALVE_1_STATE + i, data->valve[i].state, 1000 ) == ERROR_CODE_OK )
       {
         pass_counter++;
       }
     }
 
-    if ( pass_counter == CFG_VALVE_CNT && ( cmdClientSetValue( PARAM_WATER_VOL_ADD, data->water_volume_l, 1000 ) == true ) )
+    if ( pass_counter == CFG_VALVE_CNT && ( cmdClientSetValue( PARAM_WATER_VOL_ADD, data->water_volume_l, 1000 ) == ERROR_CODE_OK ) )
     {
       ctx.send_all_data = false;
       for ( int i = 0; i < CFG_VALVE_CNT; i++ )
@@ -237,7 +237,7 @@ static void backend_start( void )
 
   if ( ctx.enable_water_req )
   {
-    if ( cmdClientSetValue( PARAM_ADD_WATER, ctx.on_off_water, 1000 ) == true )
+    if ( cmdClientSetValue( PARAM_ADD_WATER, ctx.on_off_water, 1000 ) == ERROR_CODE_OK )
     {
       ctx.enable_water_req = false;
     }
@@ -245,7 +245,7 @@ static void backend_start( void )
 
   if ( ctx.on_off_water && !ctx.enable_water_req )
   {
-    if ( cmdClientGetValue( PARAM_ADD_WATER, NULL, 2000 ) == true )
+    if ( cmdClientGetValue( PARAM_ADD_WATER, NULL, 2000 ) == ERROR_CODE_OK )
     {
       ctx.on_off_water = parameters_getValue( PARAM_ADD_WATER );
     }
@@ -290,9 +290,9 @@ static void backend_emergency_disable_exit( void )
 {
   if ( !ctx.emergency_exit_msg_sended )
   {
-    int ret = cmdClientSetValue( PARAM_EMERGENCY_DISABLE, 0, 2000 );
+    error_code_t ret = cmdClientSetValue( PARAM_EMERGENCY_DISABLE, 0, 2000 );
     LOG( PRINT_INFO, "%s %d", __func__, ret );
-    if ( ret > 0 )
+    if ( ret == ERROR_CODE_OK )
     {
       ctx.emergency_exit_msg_sended = true;
     }

@@ -326,7 +326,7 @@ static void state_error( void )
 
 static void _task( void* arg )
 {
-  parameters_setValue( PARAM_CONTROLLER_SN, DevConfig_GetSerialNumber() );
+  parameters_setString( PARAM_STR_CONTROLLER_SN, DevConfig_GetSerialNumber() );
   while ( 1 )
   {
     switch ( ctx.state )

@@ -23,13 +23,19 @@
 #include "mongoose_drv.h"
 #include "nvs_flash.h"
 #include "oled.h"
+#include "ota_drv.h"
 #include "parameters.h"
 #include "pcf8574.h"
 #include "power_on.h"
+#include "prod_app.h"
 #include "server_controller.h"
 #include "sleep_e.h"
 #include "ssd1306.h"
 #include "wifidrv.h"
+
+#ifndef CFG_PRODUCTION_APPLICATION
+#define CFG_PRODUCTION_APPLICATION 0
+#endif
 
 extern void ultrasonar_start( void );
 
@@ -83,9 +89,72 @@ void app_init( void )
 {
   nvs_flash_init();
   DevConfig_Init();
+  OTA_Init();
 }
 
-void app_main()
+static void _init_remote_controller( void )
+{
+  graphic_init();
+  battery_init();
+  init_leds();
+  osDelay( 10 );
+
+  buzzer_init();
+  power_on_init();
+
+  /* Wait to measure voltage */
+  while ( !battery_is_measured() )
+  {
+    osDelay( 10 );
+  }
+
+  float voltage = battery_get_voltage();
+  power_on_enable_system();
+  init_buttons();
+
+  if ( voltage > 3.2 )
+  {
+    menuDrvInit( MENU_DRV_NORMAL_INIT );
+    wifiDrvInit();
+    cmdClientStartTask();
+    keepAliveStartTask();
+    dictionary_init();
+    fastProcessStartTask();
+    power_on_start_task();
+    // init_sleep();
+  }
+  else
+  {
+    menuDrvInit( MENU_DRV_LOW_BATTERY_INIT );
+    power_on_disable_system();
+  }
+}
+
+static void _init_server_controller( void )
+{
+  wifiDrvInit();
+
+  keepAliveStartTask();
+  cmdServerStartTask();
+  measure_start();
+  srvrControllStart();
+  ultrasonar_start();
+  //WYLACZONE
+
+  errorStart();
+
+  //LED on
+  io_conf.intr_type = GPIO_INTR_DISABLE;
+  io_conf.mode = GPIO_MODE_OUTPUT;
+  io_conf.pin_bit_mask = ( 1 << blink_pin );
+  io_conf.pull_down_en = 0;
+  io_conf.pull_up_en = 0;
+  gpio_config( &io_conf );
+  gpio_set_level( blink_pin, 1 );
+  // MongooseDrv_Init();
+}
+
+void MainApp_Start( void )
 {
   app_init();
   checkDevType();
@@ -93,65 +162,15 @@ void app_main()
 
   if ( wifi_type != T_WIFI_TYPE_SERVER )
   {
-    graphic_init();
-    battery_init();
-    init_leds();
-    osDelay( 10 );
-
-    buzzer_init();
-    power_on_init();
-
-    /* Wait to measure voltage */
-    while ( !battery_is_measured() )
-    {
-      osDelay( 10 );
-    }
-
-    float voltage = battery_get_voltage();
-    power_on_enable_system();
-    init_buttons();
-
-    if ( voltage > 3.2 )
-    {
-      menuDrvInit( MENU_DRV_NORMAL_INIT );
-      wifiDrvInit();
-      keepAliveStartTask();
-      dictionary_init();
-      fastProcessStartTask();
-      power_on_start_task();
-      // init_sleep();
-    }
-    else
-    {
-      menuDrvInit( MENU_DRV_LOW_BATTERY_INIT );
-      power_on_disable_system();
-    }
+    _init_remote_controller();
   }
   else
   {
-    wifiDrvInit();
-    keepAliveStartTask();
-
-    measure_start();
-    srvrControllStart();
-    ultrasonar_start();
-    //WYLACZONE
-
-    errorStart();
-
-    //LED on
-    io_conf.intr_type = GPIO_INTR_DISABLE;
-    io_conf.mode = GPIO_MODE_OUTPUT;
-    io_conf.pin_bit_mask = ( 1 << blink_pin );
-    io_conf.pull_down_en = 0;
-    io_conf.pull_up_en = 0;
-    gpio_config( &io_conf );
-    gpio_set_level( blink_pin, 1 );
-    MongooseDrv_Init();
+    _init_server_controller();
   }
 
   DevConfig_Printf( PRINT_DEBUG, PRINT_DEBUG, "[MENU] ------------START SYSTEM-------------" );
-  DevConfig_Printf( PRINT_DEBUG, PRINT_DEBUG, "[MENU] SN %.6ld", DevConfig_GetSerialNumber() );
+  DevConfig_Printf( PRINT_DEBUG, PRINT_DEBUG, "[MENU] SN %s", DevConfig_GetSerialNumber() );
   while ( 1 )
   {
     vTaskDelay( MS2ST( 250 ) );
@@ -167,4 +186,13 @@ void app_main()
       gpio_set_level( blink_pin, 1 );
     }
   }
+}
+
+void app_main( void )
+{
+#if CFG_PRODUCTION_APPLICATION
+  ProdApp_Start();
+#else
+  MainApp_Start();
+#endif
 }

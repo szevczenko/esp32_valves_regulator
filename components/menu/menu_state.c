@@ -63,7 +63,7 @@ static parameters_t parameters_list[] =
     [PARAM_VOLTAGE] = { .name_dict = DICT_VOLTAGE,       .unit = "V", .unit_type = UNIT_DOUBLE, .get_value = get_voltage   },
     [PARAM_SIGNAL] = { .name_dict = DICT_SIGNAL,        .unit = "",  .unit_type = UNIT_INT,    .get_value = get_signal    },
     [PARAM_CONNECTION] = { .name_dict = DICT_CONNECT,       .unit = "",  .unit_type = UNIT_BOOL,   .get_value = get_connection},
-    [PARAM_SN] = { .name_dict = DICT_SERIAL_NUMBER, .unit = "",  .unit_type = UNIT_STR,    .get_str = get_sn        },
+    [PARAM_SN] = { .name_dict = DICT_SERIAL_NUMBER, .unit = "",  .unit_type = UNIT_STR,    .get_str = get_sn          },
 };
 
 static scrollBar_t scrollBar = {
@@ -92,8 +92,8 @@ static void get_connection( uint32_t* value )
 
 static void get_sn( char** value )
 {
-  static char serial_number[16];
-  sprintf( serial_number, "%.6ld", parameters_getValue( PARAM_CONTROLLER_SN ));
+  static char serial_number[32] = { 0 };
+  parameters_getString( PARAM_STR_CONTROLLER_SN, serial_number, sizeof( serial_number ) );
   *value = serial_number;
 }
 

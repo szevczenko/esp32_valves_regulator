@@ -22,7 +22,6 @@ typedef void ( *param_set_cb )( void* user_data, uint32_t value );
 
 typedef enum
 {
-  PARAM_CONTROLLER_SN,
   PARAM_VALVE_1_STATE,
   PARAM_VALVE_2_STATE,
   PARAM_VALVE_3_STATE,
@@ -57,6 +56,12 @@ typedef enum
   PARAM_LAST_VALUE
 
 } parameter_value_t;
+
+typedef enum
+{
+  PARAM_STR_CONTROLLER_SN,
+  PARAM_STR_LAST_VALUE
+} parameter_string_t;
 
 typedef struct
 {
@@ -121,6 +126,23 @@ uint32_t parameters_getDefaultValue( parameter_value_t val );
  * @return  true - if success
  */
 bool parameters_setValue( parameter_value_t val, uint32_t value );
+
+/**
+ * @brief   Set string.
+ * @param   [in] val - parameter which set value
+ * @param   [in] str - set string value
+ * @return  true - if success
+ */
+bool parameters_setString( parameter_string_t val, const char* str );
+
+/**
+ * @brief   Set string.
+ * @param   [in] val - parameter which set value
+ * @param   [out] str - buffer to copy string
+ * @param   [in] str_len - buffer size
+ * @return  true - if success
+ */
+bool parameters_getString( parameter_string_t val, char* str, uint32_t str_len );
 
 /**
  * @brief   Print in serial all parameters
