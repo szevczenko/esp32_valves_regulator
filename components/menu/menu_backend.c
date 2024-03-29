@@ -3,9 +3,11 @@
 #include "app_config.h"
 #include "but.h"
 #include "cmd_client.h"
+#include "dictionary.h"
 #include "freertos/semphr.h"
 #include "menu_drv.h"
 #include "parameters.h"
+#include "ssdFigure.h"
 #include "start_menu.h"
 #include "stdarg.h"
 #include "stdint.h"
@@ -268,6 +270,27 @@ static void backend_menu_parameters( void )
   osDelay( 50 );
 }
 
+static const char* _get_msg( menuDrvMsg_t msg )
+{
+  switch ( msg )
+  {
+    case MENU_DRV_MSG_WAIT_TO_INIT:
+      return dictionary_get_string( DICT_WAIT_TO_INIT );
+
+    case MENU_DRV_MSG_IDLE_STATE:
+      return dictionary_get_string( DICT_MENU_IDLE_STATE );
+
+    case MENU_DRV_MSG_MENU_STOP:
+      return dictionary_get_string( DICT_MENU_STOP );
+
+    case MENU_DRV_MSG_POWER_OFF:
+      return dictionary_get_string( DICT_POWER_OFF );
+
+    default:
+      return NULL;
+  }
+}
+
 static void backend_error_check( void )
 {
   change_state( STATE_IDLE );
@@ -392,6 +415,9 @@ static void menu_task( void* arg )
 
 void menuBackendInit( void )
 {
+  menuDrvSetGetMsgCb( _get_msg );
+  menuDrvSetDrawBatteryCb( drawBattery );
+  menuDrvSetDrawSignalCb( drawSignal );
   xTaskCreate( menu_task, "menu_back", 4096, NULL, 5, NULL );
 }
 

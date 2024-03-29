@@ -4,6 +4,7 @@
 #include "menu_default.h"
 #include "oled.h"
 #include "ssdFigure.h"
+#include "dictionary.h"
 
 #define MODULE_NAME "[DEFAULT] "
 #define DEBUG_LVL   PRINT_INFO

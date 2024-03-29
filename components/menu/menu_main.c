@@ -7,6 +7,7 @@
 #include "menu_state.h"
 #include "start_menu.h"
 #include "wifi_menu.h"
+#include "dictionary.h"
 
 #define MODULE_NAME "[MAIN_MENU] "
 #define DEBUG_LVL   PRINT_INFO

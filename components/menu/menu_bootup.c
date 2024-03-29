@@ -2,7 +2,7 @@
 #include "menu_drv.h"
 #include "stdarg.h"
 #include "stdint.h"
-// #include "ssd1306.h"
+#include "dictionary.h"
 #include "but.h"
 #include "cmd_client.h"
 #include "freertos/semphr.h"

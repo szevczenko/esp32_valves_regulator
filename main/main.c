@@ -6,6 +6,7 @@
 #include "buzzer.h"
 #include "cmd_client.h"
 #include "cmd_server.h"
+#include "dictionary.h"
 #include "driver/gpio.h"
 #include "driver/i2c.h"
 #include "driver/uart.h"
@@ -19,6 +20,7 @@
 #include "intf/i2c/ssd1306_i2c.h"
 #include "keepalive.h"
 #include "measure.h"
+#include "menu_backend.h"
 #include "menu_drv.h"
 #include "mongoose_drv.h"
 #include "nvs_flash.h"
@@ -92,9 +94,15 @@ void app_init( void )
   OTA_Init();
 }
 
+static void _toggle_emergency_disable( void )
+{
+  backendToggleEmergencyDisable();
+}
+
 static void _init_remote_controller( void )
 {
   graphic_init();
+  menuBackendInit();
   battery_init();
   init_leds();
   osDelay( 10 );
@@ -114,7 +122,7 @@ static void _init_remote_controller( void )
 
   if ( voltage > 3.2 )
   {
-    menuDrvInit( MENU_DRV_NORMAL_INIT );
+    menuDrvInit( MENU_DRV_NORMAL_INIT, _toggle_emergency_disable );
     wifiDrvInit();
     cmdClientStartTask();
     keepAliveStartTask();
@@ -125,7 +133,7 @@ static void _init_remote_controller( void )
   }
   else
   {
-    menuDrvInit( MENU_DRV_LOW_BATTERY_INIT );
+    menuDrvInit( MENU_DRV_LOW_BATTERY_INIT, _toggle_emergency_disable );
     power_on_disable_system();
   }
 }

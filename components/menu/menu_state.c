@@ -9,6 +9,7 @@
 #include "ssd1306.h"
 #include "ssdFigure.h"
 #include "wifidrv.h"
+#include "dictionary.h"
 
 #define MODULE_NAME "[SETTING] "
 #define DEBUG_LVL   PRINT_INFO
