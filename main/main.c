@@ -29,15 +29,10 @@
 #include "parameters.h"
 #include "pcf8574.h"
 #include "power_on.h"
-#include "prod_app.h"
 #include "server_controller.h"
 #include "sleep_e.h"
 #include "ssd1306.h"
 #include "wifidrv.h"
-
-#ifndef CFG_PRODUCTION_APPLICATION
-#define CFG_PRODUCTION_APPLICATION 0
-#endif
 
 extern void ultrasonar_start( void );
 
@@ -198,9 +193,5 @@ void MainApp_Start( void )
 
 void app_main( void )
 {
-#if CFG_PRODUCTION_APPLICATION
-  ProdApp_Start();
-#else
   MainApp_Start();
-#endif
 }
