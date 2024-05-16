@@ -7,6 +7,7 @@
 #include "dictionary.h"
 #include "fast_add.h"
 #include "freertos/timers.h"
+#include "http_parameters_client.h"
 #include "menu_backend.h"
 #include "menu_default.h"
 #include "menu_drv.h"
@@ -136,7 +137,7 @@ static void _reset_error( void )
 {
   if ( parameters_getValue( PARAM_MACHINE_ERRORS ) )
   {
-    cmdClientSetValueWithoutResp( PARAM_MACHINE_ERRORS, 0 );
+    HTTPParamClient_SetU32ValueDontWait( PARAM_MACHINE_ERRORS, 0 );
   }
 }
 
@@ -513,7 +514,7 @@ static bool menu_enter_cb( void* arg )
     change_state( STATE_INIT );
   }
 
-  cmdClientSetValueWithoutResp( PARAM_START_SYSTEM, 1 );
+  HTTPParamClient_SetU32ValueDontWait( PARAM_START_SYSTEM, 1 );
 
   backendEnterMenuStart();
 
@@ -535,6 +536,8 @@ static bool menu_exit_cb( void* arg )
 
   MOTOR_LED_SET_GREEN( 0 );
   SERVO_VIBRO_LED_SET_GREEN( 0 );
+  MOTOR_LED_SET_RED( 0 );
+  SERVO_VIBRO_LED_SET_RED( 0 );
   return true;
 }
 
@@ -571,8 +574,9 @@ static void menu_check_connection( void )
     LOG( PRINT_INFO, "START_MENU: cmdClientGetAllValue try %ld", i );
     osDelay( 250 );
 
-    if ( cmdClientSetValue( PARAM_EMERGENCY_DISABLE, 0, 1000 ) == ERROR_CODE_OK )
+    if ( HTTPParamClient_SetU32Value( PARAM_EMERGENCY_DISABLE, 0, 1000 ) == ERROR_CODE_OK )
     {
+      ret = true;
       break;
     }
   }
@@ -580,7 +584,8 @@ static void menu_check_connection( void )
   if ( ret != true )
   {
     LOG( PRINT_INFO, "%s: error get parameters", __func__ );
-    change_state( STATE_IDLE );
+    change_state( STATE_RECONNECT );
+    return;
   }
 
   change_state( STATE_IDLE );
@@ -590,7 +595,7 @@ static void start_menu_idle( void )
 {
   if ( backendIsConnected() )
   {
-    cmdClientSetValueWithoutResp( PARAM_START_SYSTEM, 1 );
+    HTTPParamClient_SetU32ValueDontWait( PARAM_START_SYSTEM, 1 );
     change_state( STATE_START );
   }
   else
@@ -754,6 +759,8 @@ static void start_menu_ready( void )
     }
 #endif
 
+  ssdFigure_DrawLowAccu( 60, 1, parameters_getValue( PARAM_VOLTAGE_ACCUM ), 0 );
+
   switch ( ctx.substate )
   {
     case SUBSTATE_MAIN:
@@ -900,7 +907,7 @@ static void menu_wait_connect( void )
 
     _show_wait_connection();
     osDelay( 50 );
-  } while ( !cmdClientIsConnected() );
+  } while ( !backendIsConnected() );
 
   oled_clearScreen();
   menuPrintfInfo( dictionary_get_string( DICT_CONNECTED_TRY_READ_DATA ) );

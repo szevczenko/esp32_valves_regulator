@@ -1,10 +1,9 @@
 #include "app_config.h"
 #include "menu_drv.h"
-// #include "ssd1306.h"
+#include "dictionary.h"
 #include "menu_default.h"
 #include "oled.h"
 #include "ssdFigure.h"
-#include "dictionary.h"
 
 #define MODULE_NAME "[DEFAULT] "
 #define DEBUG_LVL   PRINT_INFO

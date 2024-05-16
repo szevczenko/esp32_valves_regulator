@@ -17,16 +17,18 @@
 #include "fast_add.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "http_parameters_client.h"
+#include "http_server.h"
 #include "intf/i2c/ssd1306_i2c.h"
 #include "keepalive.h"
 #include "measure.h"
 #include "menu_backend.h"
 #include "menu_drv.h"
-#include "mongoose_drv.h"
 #include "nvs_flash.h"
 #include "oled.h"
 #include "ota_drv.h"
 #include "parameters.h"
+#include "parameters_api.h"
 #include "pcf8574.h"
 #include "power_on.h"
 #include "server_controller.h"
@@ -119,7 +121,7 @@ static void _init_remote_controller( void )
   {
     menuDrvInit( MENU_DRV_NORMAL_INIT, _toggle_emergency_disable );
     wifiDrvInit();
-    cmdClientStartTask();
+    HTTPParamClient_Init();
     keepAliveStartTask();
     dictionary_init();
     fastProcessStartTask();
@@ -138,7 +140,6 @@ static void _init_server_controller( void )
   wifiDrvInit();
 
   keepAliveStartTask();
-  cmdServerStartTask();
   measure_start();
   srvrControllStart();
   ultrasonar_start();
@@ -154,7 +155,8 @@ static void _init_server_controller( void )
   io_conf.pull_up_en = 0;
   gpio_config( &io_conf );
   gpio_set_level( blink_pin, 1 );
-  // MongooseDrv_Init();
+  HTTPServer_Init();
+  ParametersAPI_Init();
 }
 
 void MainApp_Start( void )

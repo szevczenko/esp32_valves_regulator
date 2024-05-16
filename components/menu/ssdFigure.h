@@ -31,5 +31,6 @@ void ssdFigure_DrawAcceptButton( uint8_t x, uint8_t y );
 void ssdFigure_DrawDeclineButton( uint8_t x, uint8_t y );
 void ssdFigure_DrawArrow( uint8_t x, uint8_t y, bool up );
 void ssdFigure_DrawTank( uint8_t x, uint8_t y, uint8_t filled );
+void ssdFigure_DrawLowAccu( uint8_t x, uint8_t y, float acc_voltage, float acc_current );
 
 #endif

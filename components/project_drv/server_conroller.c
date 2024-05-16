@@ -2,6 +2,7 @@
 
 #include "cmd_server.h"
 #include "error_valve.h"
+#include "http_server.h"
 #include "measure.h"
 #include "parameters.h"
 #include "pwm_drv.h"
@@ -77,7 +78,7 @@ static server_controller_ctx ctx =
                {
         .gpio = 19,
         .menu_value = PARAM_VALVE_7_STATE,
-      }}
+      } }
 };
 
 static char* state_name[] =
@@ -218,7 +219,7 @@ static void state_idle( void )
     return;
   }
 
-  if ( ctx.working_state_req && cmdServerIsWorking() )
+  if ( ctx.working_state_req && HTTPServer_IsClientConnected() )
   {
     measure_meas_calibration_value();
     count_working_data();
@@ -244,7 +245,7 @@ static void state_working( void )
     return;
   }
 
-  if ( !ctx.working_state_req || !cmdServerIsWorking() )
+  if ( !ctx.working_state_req || !HTTPServer_IsClientConnected() )
   {
     change_state( STATE_IDLE );
     return;

@@ -21,20 +21,3 @@ idf.py build
 ```
 idf.py flash -p COM8
 ```
-Test web UI
-======================
-1. Connect to WiFi access point VALVE by computer or phone. Default password:
-```
-SuperTrudne1!-_
-```
-2. Write in browser:
-```
-http://192.168.4.1
-```
-3. Default caredential:
-
-| Username  | Password |
-| --------- | -------- |
-|   admin   |   admin  |
-|   user1   |   user1  |
-|   user2   |   user2  |

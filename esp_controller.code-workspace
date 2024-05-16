@@ -161,7 +161,13 @@
             "error_code.h": "c",
             "keepalive.h": "c",
             "menu_drv.h": "c",
-            "mongoose_drv.h": "c"
+            "mongoose_drv.h": "c",
+            "cmd_client.h": "c",
+            "stdarg.h": "c",
+            "http_parameters_client.h": "c",
+            "sleep_e.h": "c",
+            "server_controller.h": "c",
+            "complex": "c"
         },
         "cSpell.words": [
             "centi",

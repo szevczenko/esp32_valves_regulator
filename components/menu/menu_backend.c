@@ -5,6 +5,7 @@
 #include "cmd_client.h"
 #include "dictionary.h"
 #include "freertos/semphr.h"
+#include "http_parameters_client.h"
 #include "menu_drv.h"
 #include "parameters.h"
 #include "ssdFigure.h"
@@ -99,14 +100,14 @@ static void _send_emergency_msg( void )
   }
 
   bool ret =
-    ( cmdClientSetValue( PARAM_EMERGENCY_DISABLE, 1, 2000 ) == ERROR_CODE_OK )
-    && ( cmdClientSetValue( PARAM_VALVE_1_STATE, 0, 2000 ) == ERROR_CODE_OK )
-    && ( cmdClientSetValue( PARAM_VALVE_2_STATE, 0, 2000 ) == ERROR_CODE_OK )
-    && ( cmdClientSetValue( PARAM_VALVE_3_STATE, 0, 2000 ) == ERROR_CODE_OK )
-    && ( cmdClientSetValue( PARAM_VALVE_4_STATE, 0, 2000 ) == ERROR_CODE_OK )
-    && ( cmdClientSetValue( PARAM_VALVE_5_STATE, 0, 2000 ) == ERROR_CODE_OK )
-    && ( cmdClientSetValue( PARAM_VALVE_6_STATE, 0, 2000 ) == ERROR_CODE_OK )
-    && ( cmdClientSetValue( PARAM_VALVE_7_STATE, 0, 2000 ) == ERROR_CODE_OK );
+    ( HTTPParamClient_SetU32Value( PARAM_EMERGENCY_DISABLE, 1, 2000 ) == ERROR_CODE_OK )
+    && ( HTTPParamClient_SetU32Value( PARAM_VALVE_1_STATE, 0, 2000 ) == ERROR_CODE_OK )
+    && ( HTTPParamClient_SetU32Value( PARAM_VALVE_2_STATE, 0, 2000 ) == ERROR_CODE_OK )
+    && ( HTTPParamClient_SetU32Value( PARAM_VALVE_3_STATE, 0, 2000 ) == ERROR_CODE_OK )
+    && ( HTTPParamClient_SetU32Value( PARAM_VALVE_4_STATE, 0, 2000 ) == ERROR_CODE_OK )
+    && ( HTTPParamClient_SetU32Value( PARAM_VALVE_5_STATE, 0, 2000 ) == ERROR_CODE_OK )
+    && ( HTTPParamClient_SetU32Value( PARAM_VALVE_6_STATE, 0, 2000 ) == ERROR_CODE_OK )
+    && ( HTTPParamClient_SetU32Value( PARAM_VALVE_7_STATE, 0, 2000 ) == ERROR_CODE_OK );
 
   LOG( PRINT_INFO, "%s %d", __func__, ret );
   if ( ret )
@@ -149,8 +150,8 @@ static void backend_idle( void )
 
 static bool _check_error( void )
 {
-  cmdClientGetValue( PARAM_MACHINE_ERRORS, NULL, 2000 );
-  cmdClientGetValue( PARAM_WATER_FLOW_STATE, NULL, 2000 );
+  HTTPParamClient_GetU32Value( PARAM_MACHINE_ERRORS, NULL, 2000 );
+  HTTPParamClient_GetU32Value( PARAM_WATER_FLOW_STATE, NULL, 2000 );
   // uint32_t errors = parameters_getValue( PARAM_MACHINE_ERRORS );
 
   // if ( errors > 0 )
@@ -183,11 +184,11 @@ static void backend_start( void )
       menuStartResetError();
       LOG( PRINT_DEBUG, "No error" );
     }
-    cmdClientGetValue( PARAM_VOLTAGE_ACCUM, NULL, 2000 );
-    cmdClientGetValue( PARAM_LOW_LEVEL_SILOS, NULL, 2000 );
-    cmdClientGetValue( PARAM_SILOS_LEVEL, NULL, 2000 );
-    cmdClientGetValue( PARAM_SILOS_SENSOR_IS_CONNECTED, NULL, 2000 );
-    cmdClientGetString( PARAM_STR_CONTROLLER_SN, NULL, 0, 2000 );
+    HTTPParamClient_GetU32Value( PARAM_VOLTAGE_ACCUM, NULL, 2000 );
+    HTTPParamClient_GetU32Value( PARAM_LOW_LEVEL_SILOS, NULL, 2000 );
+    HTTPParamClient_GetU32Value( PARAM_SILOS_LEVEL, NULL, 2000 );
+    HTTPParamClient_GetU32Value( PARAM_SILOS_SENSOR_IS_CONNECTED, NULL, 2000 );
+    HTTPParamClient_GetStrValue( PARAM_STR_CONTROLLER_SN, NULL, 0, 2000 );
   }
 
   ctx.get_data_cnt++;
@@ -217,13 +218,13 @@ static void backend_start( void )
 
     for ( int i = 0; i < CFG_VALVE_CNT; i++ )
     {
-      if ( cmdClientSetValue( PARAM_VALVE_1_STATE + i, data->valve[i].state, 1000 ) == ERROR_CODE_OK )
+      if ( HTTPParamClient_SetU32Value( PARAM_VALVE_1_STATE + i, data->valve[i].state, 1000 ) == ERROR_CODE_OK )
       {
         pass_counter++;
       }
     }
 
-    if ( pass_counter == CFG_VALVE_CNT && ( cmdClientSetValue( PARAM_WATER_VOL_ADD, data->water_volume_l, 1000 ) == ERROR_CODE_OK ) )
+    if ( pass_counter == CFG_VALVE_CNT && ( HTTPParamClient_SetU32Value( PARAM_WATER_VOL_ADD, data->water_volume_l, 1000 ) == ERROR_CODE_OK ) )
     {
       ctx.send_all_data = false;
       for ( int i = 0; i < CFG_VALVE_CNT; i++ )
@@ -233,13 +234,13 @@ static void backend_start( void )
       ctx.sended_data.water_volume_l = data->water_volume_l;
     }
 
-    cmdClientSetValue( PARAM_PULSES_PER_LITER, parameters_getValue( PARAM_PULSES_PER_LITER ), 1000 );
-    cmdClientSetValue( PARAM_PWM_VALVE, parameters_getValue( PARAM_PWM_VALVE ), 1000 );
+    HTTPParamClient_SetU32Value( PARAM_PULSES_PER_LITER, parameters_getValue( PARAM_PULSES_PER_LITER ), 1000 );
+    HTTPParamClient_SetU32Value( PARAM_PWM_VALVE, parameters_getValue( PARAM_PWM_VALVE ), 1000 );
   }
 
   if ( ctx.enable_water_req )
   {
-    if ( cmdClientSetValue( PARAM_ADD_WATER, ctx.on_off_water, 1000 ) == ERROR_CODE_OK )
+    if ( HTTPParamClient_SetU32Value( PARAM_ADD_WATER, ctx.on_off_water, 1000 ) == ERROR_CODE_OK )
     {
       ctx.enable_water_req = false;
     }
@@ -247,12 +248,12 @@ static void backend_start( void )
 
   if ( ctx.on_off_water && !ctx.enable_water_req )
   {
-    if ( cmdClientGetValue( PARAM_ADD_WATER, NULL, 2000 ) == ERROR_CODE_OK )
+    if ( HTTPParamClient_GetU32Value( PARAM_ADD_WATER, NULL, 2000 ) == ERROR_CODE_OK )
     {
       ctx.on_off_water = parameters_getValue( PARAM_ADD_WATER );
     }
 
-    cmdClientGetValue( PARAM_WATER_VOL_READ, NULL, 1000 );
+    HTTPParamClient_GetU32Value( PARAM_WATER_VOL_READ, NULL, 1000 );
   }
 
   osDelay( 10 );
@@ -266,7 +267,7 @@ static void backend_menu_parameters( void )
     return;
   }
 
-  cmdClientGetValue( PARAM_VOLTAGE_ACCUM, NULL, 2000 );
+  HTTPParamClient_GetU32Value( PARAM_VOLTAGE_ACCUM, NULL, 2000 );
   osDelay( 50 );
 }
 
@@ -313,7 +314,7 @@ static void backend_emergency_disable_exit( void )
 {
   if ( !ctx.emergency_exit_msg_sended )
   {
-    error_code_t ret = cmdClientSetValue( PARAM_EMERGENCY_DISABLE, 0, 2000 );
+    error_code_t ret = HTTPParamClient_SetU32Value( PARAM_EMERGENCY_DISABLE, 0, 2000 );
     LOG( PRINT_INFO, "%s %d", __func__, ret );
     if ( ret == ERROR_CODE_OK )
     {
@@ -363,7 +364,7 @@ void backendToggleEmergencyDisable( void )
   }
   else
   {
-    if ( wifiDrvIsConnected() && cmdClientIsConnected() )
+    if ( wifiDrvIsConnected() )
     {
       ctx.emergency_req = true;
     }
@@ -425,13 +426,7 @@ bool backendIsConnected( void )
 {
   if ( !wifiDrvIsConnected() )
   {
-    LOG( PRINT_INFO, "START_MENU: WiFi not connected" );
-    return false;
-  }
-
-  if ( !cmdClientIsConnected() )
-  {
-    LOG( PRINT_INFO, "START_MENU: Client not connected" );
+    LOG( PRINT_DEBUG, "START_MENU: WiFi not connected" );
     return false;
   }
 
